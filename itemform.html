@@ -1,4 +1,4 @@
-//added by SS
+<!--//added by SS -->
 
 <!DOCTYPE html>
 <html>
@@ -14,11 +14,20 @@
 
     <script>
       function master(){
-        
+      var item = document.getElementById('item').value;
+      var desc = document.getElementById('desc').value;
+      var cost = document.getElementById('cost').value;
+      console.log(item);
+      // google.script.run.customSheet(item,desc,cost);
+      google.script.run.masterSheet(item, desc, cost);
       }
       
       function custom(){
-
+      var item = document.getElementById('item').value;
+      var desc = document.getElementById('desc').value;
+      var cost = document.getElementById('cost').value;
+      google.script.run.customSheet(item,desc,cost);
+      // google.script.run.customSheet();
       }
     </script>
     <base target="_top">
@@ -29,19 +38,21 @@
     <div class="row">
     <div class="col">
       <h3>Realm Item</h3>
-      <input type="text" id="FirstName" value="">
+      <input type="text" id="item" value="">
     </div>
     <div class="col">
       <h3>Description</h3>
-      <input type="text" id="FirstName" value="">
+      <input type="text" id="desc" value="">
     </div>
     <div class="col">
     <h3>Cost</h3>
-    <input type="text" id="Email" value="">
+    <input type="text" id="cost" value="">
     </div>
     </div>
+    <div class="col-10">
      <button type="button" class="btn btn-outline-primary" onclick="custom()">Add to Custom Sheet</button>
-     <button type="button" class="btn btn-outline-primary" onclick="master()">Add to Mater Sheet</button>
+     <button type="button" class="btn btn-outline-primary" onclick="master()">Add to Master Sheet</button>
+     </div>
 </div>
   </body>
 </html>

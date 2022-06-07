@@ -190,6 +190,7 @@ function addForumlas(){
 const activeSpreadSheet = SpreadsheetApp.getActiveSpreadsheet();
 const activeSheet = SpreadsheetApp.getActiveSheet();
 
+
 function getItemList() {
     var sheet = activeSpreadSheet.getSheetByName("Item Import");
     var data = sheet.getDataRange().getValues()
@@ -237,6 +238,7 @@ function getBOMList() {
  // Logger.log(data);
   return data;
 }
+
 
 
 function addBOMtoTemplate() {
@@ -387,16 +389,83 @@ function insertItems(selectedRoomNameInput, selectedBomType) {
     });
 
   }
+
 //added by SS
-function masterSheet(){
-  var ss = SpreadsheetApp.openById("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4"); 
-  var mSheet = ss.getSheetByName("Master");
-  var mSheetLastColum = mSheet.getLastColumn() + 1;
-  var mSheetLastRow = getFirstEmptyBOMRowWholeRow(mSheet);
-  insertData="test";
-  mSheet.getRange(mSheetLastRow, mSheetLastColum).setValue(insertData);
+function masterSheet(item, desc, cost){
+  let mSheet = activeSpreadSheet.getSheetByName("Master Sheet"); 
+  // let insertCell=rowLastVal(mSheet.getRange("A2:A"), 2);
+  let inserto = mSheet.getDataRange().getValues().length;
+  mSheet.getRange("A25027").setValue(item);
+  mSheet.getRange("B25027").setValue(desc);
+  mSheet.getRange("C25027").setValue(cost);
 }
 
+function customSheet(item, desc, cost){
+  let mSheet = activeSpreadSheet.getSheetByName("Custom Sheet") 
+  let inserto = mSheet.getDataRange().getValues().length
+  mSheet.getRange("A"+inserto).setValue(item);
+  mSheet.getRange("B"+inserto).setValue(desc);
+  mSheet.getRange("C"+inserto).setValue(cost);
+}
+
+// used like so: rowWithLastValue("A2:A", 2)
+// function rowWithLastValue(sheet, firstRow) {
+//   // range is passed as an array of values from the indicated spreadsheet cells.
+//   var arrayb=[];
+//   var lastRow = sheet.getLastRow();
+//   var data = sheet.getRange(1, 1, lastRow, 1).getValues(); //getRange(starting Row, starting column, number of rows, number of columns)
+//   for(var i=0;i<(lastRow-1);i++)
+//     {
+//       arrayb.push(data[0][i]);
+//     }
+//   for (var i = arrayb.length - 1;  i >= 0;  -- i) {
+//     if (arrayb[i] != "")  return i + firstRow;
+//   }
+//   return firstRow;
+// }
+
+function rowLastVal(range, firstRow) {
+  // range is passed as an array of values from the indicated spreadsheet cells.
+  for (var i = range.length - 1;  i >= 0;  -- i) {
+    if (range[i] != "")  return i + firstRow;
+  }
+  return range.length;
+}
+
+function itemDesc(){
+  sheet=activeSpreadSheet.getSheetByName("Internal");
+  if(sheet.getRange("C2:C")===""){
+    vLookup();
+  }
+}
+
+function vLookup(){
+  var s = activeSpreadSheet.getActiveSheet();     
+  var data = s.getSheetByName("Item Import");
+  var searchValue = s.getRange("B2").getValue();
+  var dataValues = data.getRange("B2:B").getValues();
+  var dataList = dataValues.join("ღ").split("ღ");
+  var index = dataList.indexOf(searchValue);
+  if (index === -1) {
+      throw new Error('Value not found')
+  } else {
+      var row = index + 3;
+      var foundValue = data.getRange("E"+row).getValue();
+      s.getRange("E2:E").setValue(foundValue);
+  }
+}
+
+function sendNotification(row, col, changeCol) {
+  var sheet = activeSpreadSheet.getSheetByName("Custom Sheet");
+  var cellScan = sheet.getRange(row).forEach(cell=>{
+    cell.getActiveCell().getA1Notation().getValue().toString();
+  })
+  // var message = '';
+  if(cellScan.indexOf(col)!=-1){ 
+    message = sheet.getRange(changeCol+ sheet.getActiveCell().getRowIndex()).getValue()
+  }
+  return message;
+};
 
   function isOdd(num) { return num & 1; };
 
@@ -404,7 +473,6 @@ function masterSheet(){
     var sheet = SpreadsheetApp.getActiveSheet();
     var values = sheet.getRange("D1:E" + sheet.getLastRow()).getValues();
     var row = 0;
-
     for (var row = 0; row < values.length; row++) {
       if (!values[row].join("")) break;
     }
