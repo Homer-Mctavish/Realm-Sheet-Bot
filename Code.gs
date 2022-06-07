@@ -375,19 +375,14 @@ function insertItems(selectedRoomNameInput, selectedBomType) {
                   internalSheet.getRange(internalLastRow, 4).setValue(insertData);
                   internalLastRow = internalLastRow + 1;
                 }
-
               };
-
             };
             var bomType = "";
-
           };
-
         };
         internalLastRow = internalLastRow + 1;
       }
     });
-
   }
 
 //added by SS
