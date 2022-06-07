@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+  <script src='jquery-3.2.1.min.js'></script>
+<script>
+
+function addList() {
+      google.script.run
+        .withFailureHandler(onFailure)
+        .withSuccessHandler(addListValues)
+        .getItemList();
+        
+}
+
+/*
+let itemList = [];
+$.document.ready(Item =>{
+  $.get('#selectedItemToPaste').value
+})
+*/
+
+function addItem(){
+  var itemToAdd = document.getElementById('selectedItemToPaste').value;
+  var itemQty = document.getElementById('itemQty').value;
+  var itemRoom = document.getElementById('itemRoom').value;
+  document.getElementById('selectedItemToPaste').value = '';
+  document.getElementById('selectedItemToPaste').focus();
+  //alert(itemToPaste);
+  google.script.run.addItems(itemToAdd,itemQty,itemRoom);
+
+}
+
+const activeSpreadSheet = SpreadsheetApp.getActiveSpreadsheet();
+const activeSheet = SpreadsheetApp.getActiveSheet();
+
+function getItemList() {
+    var sheet = activeSpreadSheet.getSheetByName("Item Import");
+    var data = sheet.getDataRange().getValues()
+    var array = [];
+    data.forEach(function(row){array.push([row[0],row[1]]); });
+   // Logger.log(array);
+    return array;
+}
+
+function addItems(selectedItemToPaste,itemQty,itemRoom){ 
+  let sheet = activeSpreadSheet.getActiveSheet();
+  srow = sheet.getActiveRange().getRow();
+  scolumn = sheet.getActiveRange().getColumn();
+  
+  //SpreadsheetApp.getUi().alert(srow + " " + scolumn );
+  activeSpreadSheet.getRange(srow,scolumn-2).setValue(itemRoom);
+  SpreadsheetApp.getActiveRange().setValue(selectedItemToPaste);
+  activeSpreadSheet.getRange(srow,scolumn+1).setValue(itemQty);
+ // addForumlas();
+  sheet.setActiveRange(sheet.getRange(srow+1,scolumn));
+  //var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  //sheet.getRange(e.range.getRow(), col).setValue(selectedItemToPaste);
+
+}
+
+function removeItem(){
+  google.script.run.removeItems(itemQty,itemRoom);
+
+}
+//need to put option value as the item name only!!. then figure out how to paste just that to the sheet.
+
+function addListValues(values) {
+      var list = document.getElementById('dropdownList');
+      for (var i = 1; i < values.length; i++) 
+        var subtext = document.createElement("data-subtext");
+       subtext.value = values[i];  
+      for (var i = 0; i < values.length; i++) {
+        var option = document.createElement("option");
+        option.innerHTML = values[i];
+        option.value = values[i][0]; // Modified
+        list.appendChild(option, subtext); // Modified
+      }
+}
+
+function onFailure(err) {
+      alert('There was an error!' + err.message);
+    }
+
+	function loadBOMTypes() {
+    google.script.run.withSuccessHandler(function(ar) 
+    {
+      var roomBOMSelect = document.getElementById("room-types");
+      roomBOMSelect.options.length = 0;
+      let option = document.createElement("option");
+      option.value = "";
+      option.text = "";
+      roomBOMSelect.appendChild(option);
+      
+      let option2 = document.createElement("option");
+      option2.value = "00";
+      option2.text = "Selected Text";
+      roomBOMSelect.appendChild(option2);  
+
+      ar.forEach(function(item, index) 
+      {    
+        let option = document.createElement("option");
+        option.value = item[1];
+        option.text = item[0];
+        roomBOMSelect.appendChild(option);    
+      });
+    
+    }).getBOMList();
+  };
+
+  
+  function submitData() {
+    
+    var roomNames = document.getElementById('room-name').value;
+    var selectedType = document.getElementById("room-types");
+    var selectedTypeText= selectedType.options[selectedType.selectedIndex].text;
+
+
+
+if (roomNames.length < 2 || selectedTypeText.length < 1){
+window.alert("Please make sure Room Name is enterd and BOM Type selected");
+return;
+}
+
+    google.script.run.insertItems(roomNames,selectedTypeText);
+  }
+
+
+  function submitAddBom() {
+  google.script.run.addBOMtoTemplate();
+  
+  }
+
+//added by SS
+  function launchR(){
+    google.script.run.runRealmItemAdd();
+  }
+
+
+</script>
+
+//edited by SS
+</head>
+<body onload="addList()"> 
+<ul class="list-group">
+<li class="list-group-item">
+
+  <div class="container mx-auto">
+    <div class="row">
+      <div class="col-9">
+        <h3>Room Name</h3>
+      </div>
+      <div class="col-9">
+        <a>Seperate multiple rooms with comma.</a>
+        </div>
+        <div class="col-9">
+          <textarea  type="text" class="form-control" id="room-name" rows="5" cols="30"> </textarea>
+        </div>
+    </div>
+  </div>
+  </li>
+
+<li class="list-group-item">
+
+  <div class="container mx-auto">
+    <div class="row">
+      <div class="col-9">
+        <h3>BOM Type</h3>
+       </div>
+       <div class="col-9">
+        <select id="room-types" ></select>
+        <script>
+          loadBOMTypes();
+        </script>
+       </div>
+       <div class="col-9">
+          <button type="button" class="btn btn-outline-primary" onclick="submitAddBom()">Add Selected to BOM</button>
+          <a>(select item & qty)</a>
+       </div>
+    </div>
+    </div>
+</li>
+
+
+<li class="list-group-item">
+<div class="container mx-auto">
+<button type="button" class="btn btn-outline-primary" onclick="submitAddBom()">Add Selected to BOM</button>
+</br>(select item & qty)
+</br>
+</br>
+<button type="button" class="btn btn-outline-primary" onclick="loadBOMTypes()">Refresh BOM List</button>
+</div>
+</li>
+
+<li class="list-group-item">
+<div class="container mx-auto">
+  <div class="row">
+  <div class="col-10">
+    <h3>Quick Add</h3>
+  </div>
+    <div class="col-9">
+    <label for="lRoomName"> Room Name:</label><input type="text" id="itemRoom" name="itemRoom"> </br>
+    <label for="lRoomName"> Room Name:</label><input type="text" id="itemRoom" name="itemRoom"> </br>
+    <label for="lQtye"> QTY:</label><input type="text" id="itemQty" name="itemQty"> </br>
+    </div>
+    <div class="col-9">
+        <input list="dropdownList" id="selectedItemToPaste"name="list" placeholder="Choose Item"  onchange="addItem()" >  
+          <datalist id="dropdownList">      
+          </datalist>
+          </br>
+          <!-- <button type="submit"  onclick="addItem()">Add Item</button> -->
+    </div>
+  </div>
+</div>
+</li>
+<li>
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <button type="button" class="btn btn-outline-primary" onclick="launchR()">Add Item</button>
+        </div>
+      </div>
+    </div>
+</li>
+</ul>
+</body>
+
+</html>
