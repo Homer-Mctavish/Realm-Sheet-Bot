@@ -389,18 +389,18 @@ function insertItems(selectedRoomNameInput, selectedBomType) {
 function masterSheet(item, desc, cost){
   let mSheet = activeSpreadSheet.getSheetByName("Master Sheet"); 
   // let insertCell=rowLastVal(mSheet.getRange("A2:A"), 2);
-  let inserto = mSheet.getActiveRange().getValues().length;
-  mSheet.getRange("A",inserto).setValue(item);
-  mSheet.getRange("B",inserto).setValue(desc);
-  mSheet.getRange("C",inserto).setValue(cost);
+  let inserto = getLastDataRow(mSheet);
+  mSheet.getRange("A"+inserto).setValue(item);
+  mSheet.getRange("B"+inserto).setValue(desc);
+  mSheet.getRange("C"+inserto).setValue(cost);
 }
 
 function customSheet(item, desc, cost){
   let mSheet = activeSpreadSheet.getSheetByName("Custom Sheet") 
-  let inserto = mSheet.getActiveRange().getValues().length;
-  mSheet.getRange("A",inserto).setValue(item);
-  mSheet.getRange("B",inserto).setValue(desc);
-  mSheet.getRange("C",inserto).setValue(cost);
+  let inserto = getLastDataRow(mSheet);
+  mSheet.getRange("A"+inserto).setValue(item);
+  mSheet.getRange("B"+inserto).setValue(desc);
+  mSheet.getRange("C"+inserto).setValue(cost);
 }
 
 
