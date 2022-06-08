@@ -388,8 +388,7 @@ function insertItems(selectedRoomNameInput, selectedBomType) {
 //added by SS
 function masterSheet(item, desc, cost){
   let mSheet = activeSpreadSheet.getSheetByName("Master Sheet"); 
-  // let insertCell=rowLastVal(mSheet.getRange("A2:A"), 2);
-  let inserto = getLastDataRow(mSheet);
+  let inserto = getLastDataRow(mSheet)+1;
   mSheet.getRange("A"+inserto).setValue(item);
   mSheet.getRange("B"+inserto).setValue(desc);
   mSheet.getRange("C"+inserto).setValue(cost);
@@ -397,28 +396,12 @@ function masterSheet(item, desc, cost){
 
 function customSheet(item, desc, cost){
   let mSheet = activeSpreadSheet.getSheetByName("Custom Sheet") 
-  let inserto = getLastDataRow(mSheet);
+  let inserto = getLastDataRow(mSheet)+1;
   mSheet.getRange("A"+inserto).setValue(item);
   mSheet.getRange("B"+inserto).setValue(desc);
   mSheet.getRange("C"+inserto).setValue(cost);
 }
 
-
-// used like so: rowWithLastValue("A2:A", 2)
-// function rowWithLastValue(sheet, firstRow) {
-//   // range is passed as an array of values from the indicated spreadsheet cells.
-//   var arrayb=[];
-//   var lastRow = sheet.getLastRow();
-//   var data = sheet.getRange(1, 1, lastRow, 1).getValues(); //getRange(starting Row, starting column, number of rows, number of columns)
-//   for(var i=0;i<(lastRow-1);i++)
-//     {
-//       arrayb.push(data[0][i]);
-//     }
-//   for (var i = arrayb.length - 1;  i >= 0;  -- i) {
-//     if (arrayb[i] != "")  return i + firstRow;
-//   }
-//   return firstRow;
-// }
 
 function rowLastVal(range, firstRow) {
   // range is passed as an array of values from the indicated spreadsheet cells.
@@ -435,20 +418,36 @@ function itemDesc(){
   }
 }
 
-function vLookup(){
+function vLookup(start, end, inputstart, inputend){
   var s = activeSpreadSheet.getActiveSheet();     
   var data = s.getSheetByName("Item Import");
-  var searchValue = s.getRange("B2").getValue();
-  var dataValues = data.getRange("B2:B").getValues();
+  var searchValue = s.getRange(start).getValue();
+  var dataValues = data.getRange(start+":"+end).getValues();
   var dataList = dataValues.join("ღ").split("ღ");
   var index = dataList.indexOf(searchValue);
   if (index === -1) {
       throw new Error('Value not found')
   } else {
       var row = index + 3;
-      var foundValue = data.getRange("E"+row).getValue();
-      s.getRange("E2:E").setValue(foundValue);
+      var foundValue = data.getRange(inputend+row).getValue();
+      s.getRange(inputstart+":"+inputend).setValue(foundValue);
   }
+}
+
+function importList(linktoimport, startingrowindex, startingcolumnindex, sheetName) {
+  //get values to be imported from the linked sheet
+  var s = SpreadsheetApp.openByUrl(linktoimport);
+  var rowstocopy = getLastDataRow(s);
+  var colstocopy = getLastDataCol(s);     
+  var values = s.getSheetValues(startingrowindex, startingcolumnindex, rowstocopy, colstocopy);
+  var sheetimportto=activeSpreadSheet.getSheetByName(sheetName);
+  //set  values imported   
+  sheetimportto.getRange(1,1,values.length,values[0].length).setValues(values);
+}
+
+function doimp(){
+  importList("https://docs.google.com/spreadsheets/d/1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4/edit#gid=0", 1, 1, "Custom Sheet");
+  importList("https://docs.google.com/spreadsheets/d/1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4/edit#gid=0", 1, 1, "Master Sheet");
 }
 
 function sendNotification(row, col, changeCol) {
@@ -486,6 +485,23 @@ function getFirstEmptyBOMRowWholeRow(sheet) {
     Logger.log(row);
     return (row + 1);
   }
+
+      function getLetter(num){
+      var letter = String.fromCharCode(num + 64);
+      return letter;
+    }
+
+function getLastDataCol(sheet) {
+  var lastCol = sheet.getLastColumn();
+  var colval = getLetter(lastCol);
+  var range = sheet.getRange(colval+"1");
+  if (range.getValue() !== "") {
+    return lastCol;
+  } else {
+    return range.getNextDataCell(SpreadsheetApp.Direction.NEXT).getColumn();
+  }              
+}
+
 
 function getLastDataRow(sheet) {
   var lastRow = sheet.getLastRow();

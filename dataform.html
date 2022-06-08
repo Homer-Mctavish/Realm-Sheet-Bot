@@ -64,6 +64,10 @@ function addItems(selectedItemToPaste,itemQty,itemRoom){
 
 }
 
+function imp(){
+  google.script.run.doimp();
+}
+
 function removeItem(){
   google.script.run.removeItems(itemQty,itemRoom);
 
@@ -225,6 +229,7 @@ return;
     <div class="row">
       <div class="col">
         <button type="button" class="btn btn-outline-primary" onclick="launchR()">Add Item</button>
+        <button type="button" class="btn btn-outline-primary" onclick="imp()">import sheets</button>
         </div>
       </div>
     </div>
