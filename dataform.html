@@ -68,6 +68,10 @@ function imp(){
   google.script.run.doimp();
 }
 
+function impl(){
+  google.script.run.testingfd();
+}
+
 function removeItem(){
   google.script.run.removeItems(itemQty,itemRoom);
 
@@ -145,7 +149,9 @@ return;
     google.script.run.runRealmItemAdd();
   }
 
-
+  function testl(){
+    google.script.run.alertuser();
+  }
 </script>
 
 <!--//edited by SS-->
@@ -184,31 +190,23 @@ return;
         </script>
        </div>
        <div class="col">
-          <button type="button" class="btn btn-outline-primary" onclick="submitAddBom()" style="margin-top:20px">Add Selected to BOM</button>
+         <button type="button" class="btn btn-outline-primary" onclick="submitData()" style="margin-top:20px">Add Selected to BOM</button>
        </div>
        <div class="col-9" style="margin-top:20px">
-        <a>(select item & qty)</a>
+        <button type="button" class="btn btn-outline-primary" onclick="submitAddBom()" style="margin-top:20px">Add new BOM type</button>
         </div>
+      <div class="col-9" style="margin-top:20px">
+        <button type="button" class="btn btn-outline-primary" onclick="loadBOMTypes()" style="margin-top:20px">Refresh BOM List</button>
+      </div>
     </div>
     </div>
-</li>
-
-
-<li class="list-group-item">
-<div class="container mx-auto">
-<button type="button" class="btn btn-outline-primary" onclick="submitAddBom()" style="margin-top:20px">Add Selected to BOM</button>
-<div class="col-9" style="margin-top:20px">
-<a>(select item & qty)</a>
-</div>
-<button type="button" class="btn btn-outline-primary" onclick="loadBOMTypes()" style="margin-top:20px">Refresh BOM List</button>
-</div>
 </li>
 
 <li class="list-group-item">
 <div class="container mx-auto">
   <div class="row">
   <div class="col-10">
-    <h3>Quick Add</h3>
+    <h3>Add Items</h3>
   </div>
     <div class="col-9"style="margin-top:20px">
     <label for="lRoomName"> Room Name:</label><input type="text" id="itemRoom" name="itemRoom"> </br>
@@ -218,8 +216,12 @@ return;
         <input list="dropdownList" id="selectedItemToPaste"name="list" placeholder="Choose Item"  onchange="addItem()" >  
           <datalist id="dropdownList">      
           </datalist>
-          </br>
-          <!-- <button type="submit"  onclick="addItem()">Add Item</button> -->
+          <div class="col-9"style="margin-top:20px">
+          <button type="button" class="btn btn-outline-primary" onclick="addItem()">Quick Add</button>
+          </div>
+          <div class="col-9"style="margin-top:20px">
+          <button type="button" class="btn btn-outline-primary" onclick="launchR()">Add New Item</button>
+          </div>
     </div>
   </div>
 </div>
@@ -227,9 +229,9 @@ return;
 <li>
   <div class="container">
     <div class="row">
-      <div class="col">
-        <button type="button" class="btn btn-outline-primary" onclick="launchR()">Add Item</button>
+      <div class="col-9">
         <button type="button" class="btn btn-outline-primary" onclick="imp()">import sheets</button>
+        <button type="button" class="btn btn-outline-primary" onclick="impl()">the test</button>
         </div>
       </div>
     </div>

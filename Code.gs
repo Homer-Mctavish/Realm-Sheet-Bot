@@ -20,7 +20,7 @@ function authorizeItemImport(){
   var ssId = SpreadsheetApp.getActiveSpreadsheet().getId();
       addImportrangePermission_(ssId,'1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4');
 
-//SpreadsheetApp.getUi().alert("running imoprt");
+//SpreadsheetApp.getUi().alert("running import");
 
   sheet.getRange(1, 1).setFormula("");
   sheet.getRange(1, 1).setFormula("=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4/edit#gid=0\",\"items!A1:D\")");
@@ -66,6 +66,7 @@ function runRealmItemAdd() {
       .showSidebar(html); */
   
 }
+
 
 /*
 function onEdit(event) {
@@ -202,16 +203,18 @@ function getItemList() {
 //edited by SS
 function addItems(selectedItemToPaste,itemQty,itemRoom){ 
   let sheet = activeSpreadSheet.getActiveSheet();
-  srow = sheet.getActiveRange().getRow();
-  scolumn = sheet.getActiveRange().getColumn();
+  let srow = sheet.getActiveRange().getRow();
+  let scolumn = sheet.getActiveRange().getColumn();
   
-  //SpreadsheetApp.getUi().alert(srow + " " + scolumn );
-  activeSpreadSheet.getRange(srow,scolumn-2).setValue(itemRoom);
+  //SpreadsheetApp.getUi().alert(srow + " " + scolumn )
+  //change scolumn to letter, change s
+  let scolumnlet1 = getLetter(scolumn-2);
+  let scolumnlet2 = getLetter(scolumn+1);
+  activeSpreadSheet.getRange(scolumnlet1+srow).setValue(itemRoom.toUpperCase());
   SpreadsheetApp.getActiveRange().setValue(selectedItemToPaste);
-  activeSpreadSheet.getRange(srow,scolumn+1).setValue(itemQty);
+  activeSpreadSheet.getRange(scolumnlet2+srow).setValue(itemQty);
  // addForumlas();
-  sheet.setActiveRange(sheet.getRange(srow+1,scolumn));
-  //var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+   //var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   //sheet.getRange(e.range.getRow(), col).setValue(selectedItemToPaste);
 
 }
@@ -240,17 +243,20 @@ function getBOMList() {
 }
 
 
+function gerbage(){
+  let g = activeSpreadSheet.getActiveSheet();
+  
+}
 
 function addBOMtoTemplate() {
   var ui = SpreadsheetApp.getUi();
-  var reAdlt = ui.prompt("Please BOM Type");
+  var result = ui.prompt("Please input BOM Type");
   var bomName = result.getResponseText();
  
   //we will make sure BOM Type doesn't already exist or that would not be good
   //var ss = SpreadsheetApp.getActiveSpreadsheet();
   var ss = SpreadsheetApp.openById("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4"); 
   var bomSheet = ss.getSheetByName("BOM");
-  //var bomSheetLastRow = getFirstEmptyRowWholeRow();
   var bomSheetLastRow = bomSheet.getLastRow()+1;
   var bomSheetValue = bomSheet.getRange("A2:" + "ZZ" + bomSheetLastRow).getValues();
   let ohNoUserBadInput = false;
@@ -312,7 +318,6 @@ function insertItems(selectedRoomNameInput, selectedBomType) {
     var internalSheet = ss.getSheetByName("Internal");
 
     var internalLastRow =  getLastDataRow(internalSheet) +2;
-    //var internalLastRow = getFirstEmptyRowWholeRow();
 
   // if user wants to just copy current selected items we will loop through selected and copy paste that. 
   if (selectedBomType == "Selected Text") {
@@ -418,11 +423,29 @@ function itemDesc(){
   }
 }
 
-function vLookup(start, end, inputstart, inputend){
+
+//change to general formula maintainer using function(sheet, formula)
+//also use the insert items foreach loop to do each formula in one pass
+//in future make the function take only these things, and the range parameters will be some implementation of a method for future activespreadsheet object
+//set the value of the range as protected after filling with formula
+// function keepvLookup(start, end){
+//   var spreader= activeSpreadSheet.getSheetByName("Sheet37");
+//   spreader.getRange(start, end).setValue(vLookup("Sheet37", "C2", ""))
+
+// }
+
+function testingfd(){
+  var j=activeSpreadSheet.getSheetByName("Sheet37");
+  j.getRange("A19:A").setValue(j.getRange("$A$2:D").getValues());
+}
+//VLOOKUP(C2,'Item Import'!$A$2:D,2,0)
+//C2=start(start is the cell you want to grab the value of I.E. C2), 'Item Import'!$A$2:D= start:end, range of items you want to vlookup, and 2=index, or the location to start searching
+//
+function vLookup(sheet, start, end){
   var s = activeSpreadSheet.getActiveSheet();     
-  var data = s.getSheetByName("Item Import");
+  var data = s.getSheetByName(sheet);
   var searchValue = s.getRange(start).getValue();
-  var dataValues = data.getRange(start+":"+end).getValues();
+  var dataValues = data.getRange(end).getValues();
   var dataList = dataValues.join("ღ").split("ღ");
   var index = dataList.indexOf(searchValue);
   if (index === -1) {
@@ -450,17 +473,40 @@ function doimp(){
   importList("https://docs.google.com/spreadsheets/d/1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4/edit#gid=0", 1, 1, "Master Sheet");
 }
 
-function sendNotification(row, col, changeCol) {
-  var sheet = activeSpreadSheet.getSheetByName("Custom Sheet");
-  var cellScan = sheet.getRange(row).forEach(cell=>{
-    cell.getActiveCell().getA1Notation().getValue().toString();
-  })
-  // var message = '';
-  if(cellScan.indexOf(col)!=-1){ 
-    message = sheet.getRange(changeCol+ sheet.getActiveCell().getRowIndex()).getValue()
+function onEdit(e) {
+  const row = e.range.getRow();
+  const col = e.range.getColumn();
+  var alerto = "";
+  if(e.source.getActiveSheet().getName()==="Internal"&& col >= 3 && row=== 7 && e.value=== 'TRUE'){
+    alerto ="original cell changed to: "+e.value;
   }
-  return message;
-};
+  e.source.getActiveSheet().getRange("C2").setValue(alerto);
+}
+
+// function sendNotification(sheet, changingarea) {
+//   var arrg = [];
+//   var cellScan = sheet.getRange(changingarea).forEach(cell=>{
+//     cell.getActiveCell().getA1Notation().getValue().toString();
+//   });
+//   cellScan.forEach(function onEdit(e){
+//   const range = e.range;
+//   var alert = "";
+//   range.forEach(cell =>{
+//     alert ="original changed to: "+cell.getValue()
+//     arrg.push(alert);
+//   });
+// });
+
+// return arrg;
+// };
+
+
+// //alerts user of changes to any range
+// function alertuser(){
+//   var s= activeSpreadSheet.getSheetByName("Sheet37");
+//   s.getRange("K1").setValue(sendNotification(s, "E2:E18"));
+// }
+
 
   function isOdd(num) { return num & 1; };
 
@@ -478,7 +524,6 @@ function sendNotification(row, col, changeCol) {
 function getFirstEmptyBOMRowWholeRow(sheet) {
     var values = sheet.getRange("A1:E" + sheet.getLastRow()).getValues();
     var row = 0;
-
     for (var row = 0; row < values.length; row++) {
       if (!values[row].join("")) break;
     }
