@@ -198,6 +198,7 @@ const activeSheet = SpreadsheetApp.getActiveSheet();
 //   activeSpreadSheet.getSheetByName("Sheet37").getRange("K1:"+"K"+cellulor[0].getValues().length).setValue(cellulor[1].getValues()[0][1]);
 // }
 
+//use the cellulor instead of the getRange to grab all the cells to copy. figure out how the 
 function addRow() {
   var sheet = activeSpreadSheet.getActiveSheet(); 
   var range = sheet.getActiveRange(); 
@@ -219,7 +220,8 @@ function addRow() {
 // {
 //   // there is a formula
 // }
-  sheet.getRange(er+":"+is).copyTo(range, SpreadsheetApp.CopyPasteType.PASTE_FORMAT);
+//er+":"+is
+  sheet.getRange("G18:G20").copyTo(range);
   // sheet.getRange(nu+":"+mb).setValue(range.getA1Notation());
 }
 
