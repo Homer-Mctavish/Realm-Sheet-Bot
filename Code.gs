@@ -190,7 +190,36 @@ function addForumlas(){
 //added by SS
 const activeSpreadSheet = SpreadsheetApp.getActiveSpreadsheet();
 const activeSheet = SpreadsheetApp.getActiveSheet();
+//todo: instantiate this variable when the proper spreadsheet is active
+var cellulor = activeSpreadSheet.getSelection().getActiveRangeList().getRanges();
 
+// function staysame(){
+//   var ber = keepFormat(cellulor);
+//   activeSpreadSheet.getSheetByName("Sheet37").getRange("K1:"+"K"+cellulor[0].getValues().length).setValue(cellulor[1].getValues()[0][1]);
+// }
+
+//testing aquisition of all highlighted cells in active spreadsheet, idea is to get a nested list of every value per range.
+//pie in the sky: make it so that the coppied values 
+function keepFormat(thebigrangeset){
+  var big = [];
+  for(var i =0;i<thebigrangeset.length;i++){
+    for(var j=0; j<thebigrangeset[i].getValues().length;j++){
+      big.concat(thebigrangeset[i].getValues());
+    }
+  }
+  return big
+}
+
+function addRow() {
+  var sh = activeSpreadSheet.getActiveSheet(); 
+  var lRow = sh.getLastRow(); 
+  var lCol = sh.getLastColumn(), range = sh.getRange(lRow,1,1,lCol);
+  // if (range.getFormula().substring(0, 1) === '=')
+  //   {
+      sh.insertRowsAfter(lRow, 1);
+      range.copyTo(sh.getRange(lRow+1, 1, 1, lCol), {contentsOnly:false});
+    // }
+}
 
 function getItemList() {
     var sheet = activeSpreadSheet.getSheetByName("Item Import");
@@ -220,7 +249,6 @@ function addItems(selectedItemToPaste,itemQty,itemRoom){
 }
 
 //added by SS
-/*
 function removeItems(itemQty, itemRoom){
   let sheet = activeSpreadSheet.getActiveSheet();
   srow = sheet.getActiveRange().getRow();
@@ -231,7 +259,7 @@ function removeItems(itemQty, itemRoom){
   activeSpreadSheet.getRange(srow, scolumn);
   sheet.setActiveRange(sheet.getRange(srow+1, scolumn));
  }
-*/
+
 
 function getBOMList() {
   var ss = SpreadsheetApp.openById("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4"); 
@@ -242,11 +270,6 @@ function getBOMList() {
   return data;
 }
 
-
-function gerbage(){
-  let g = activeSpreadSheet.getActiveSheet();
-  
-}
 
 function addBOMtoTemplate() {
   var ui = SpreadsheetApp.getUi();
@@ -476,18 +499,19 @@ function doimp(){
 function onEdit(e) {
   const row = e.range.getRow();
   const col = e.range.getColumn();
-  var alerto = "";
-  if(e.source.getActiveSheet().getName()==="Internal"&& col >= 3 && row=== 7 && e.value=== 'TRUE'){
-    alerto ="original cell changed to: "+e.value;
-  }
-  e.source.getActiveSheet().getRange("C2").setValue(alerto);
+  var scolumnlet2 = getLetter(col);
+  // if(e.source.getActiveSheet().getName()==="Sheet37"&& col >= 1 && row=== 3 && e.value=== 'TRUE'){
+  //   alerto ="original cell changed to: "+e.source.getActiveSheet().getRange(scolumnlet2+row).getValue();
+  // }
+  // e.source.getActiveSheet().getRange("C1").setValue(e.source.getActiveSheet().getRange(scolumnlet2+row).getValue());
+  return e.source.getActiveSheet().getRange(scolumnlet2+row).getValue();
 }
 
 // function sendNotification(sheet, changingarea) {
 //   var arrg = [];
-//   var cellScan = sheet.getRange(changingarea).forEach(cell=>{
-//     cell.getActiveCell().getA1Notation().getValue().toString();
-//   });
+  // var cellScan = sheet.getRange(changingarea).forEach(cell=>{
+  //   cell.getActiveCell().getA1Notation().getValue().toString();
+  // });
 //   cellScan.forEach(function onEdit(e){
 //   const range = e.range;
 //   var alert = "";
@@ -496,16 +520,8 @@ function onEdit(e) {
 //     arrg.push(alert);
 //   });
 // });
-
 // return arrg;
 // };
-
-
-// //alerts user of changes to any range
-// function alertuser(){
-//   var s= activeSpreadSheet.getSheetByName("Sheet37");
-//   s.getRange("K1").setValue(sendNotification(s, "E2:E18"));
-// }
 
 
   function isOdd(num) { return num & 1; };
