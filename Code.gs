@@ -191,34 +191,36 @@ function addForumlas(){
 const activeSpreadSheet = SpreadsheetApp.getActiveSpreadsheet();
 const activeSheet = SpreadsheetApp.getActiveSheet();
 //todo: instantiate this variable when the proper spreadsheet is active
-var cellulor = activeSpreadSheet.getSelection().getActiveRangeList().getRanges();
+// var cellulor = activeSpreadSheet.getSelection().getActiveRangeList().getRanges();
 
 // function staysame(){
 //   var ber = keepFormat(cellulor);
 //   activeSpreadSheet.getSheetByName("Sheet37").getRange("K1:"+"K"+cellulor[0].getValues().length).setValue(cellulor[1].getValues()[0][1]);
 // }
 
-//testing aquisition of all highlighted cells in active spreadsheet, idea is to get a nested list of every value per range.
-//pie in the sky: make it so that the coppied values 
-function keepFormat(thebigrangeset){
-  var big = [];
-  for(var i =0;i<thebigrangeset.length;i++){
-    for(var j=0; j<thebigrangeset[i].getValues().length;j++){
-      big.concat(thebigrangeset[i].getValues());
-    }
-  }
-  return big
-}
-
 function addRow() {
-  var sh = activeSpreadSheet.getActiveSheet(); 
-  var lRow = sh.getLastRow(); 
-  var lCol = sh.getLastColumn(), range = sh.getRange(lRow,1,1,lCol);
-  // if (range.getFormula().substring(0, 1) === '=')
-  //   {
-      sh.insertRowsAfter(lRow, 1);
-      range.copyTo(sh.getRange(lRow+1, 1, 1, lCol), {contentsOnly:false});
-    // }
+  var sheet = activeSpreadSheet.getActiveSheet(); 
+  var range = sheet.getActiveRange(); 
+  let copy = range;
+  var rownum= range.getValues().length;
+  var rowe=sheet.getActiveCell().getRow();
+  // var cole = getLetter(range.getColumn());
+  sheet.insertRowsBefore(rowe, rownum);
+  let stringo = range.getA1Notation();
+  let st = stringo.split(":")[0]
+  let ri = stringo.split(":")[1]
+  let nu = parseInt(st); 
+  let mb = parseInt(ri);
+  let er = nu+rownum;
+  let is = mb+rownum;
+  //range in parenthesis is one to copy TO
+//   var ranger =
+//   if (range.getFormula().substring(0, 1) === '='
+// {
+//   // there is a formula
+// }
+  sheet.getRange(er+":"+is).copyTo(range, SpreadsheetApp.CopyPasteType.PASTE_FORMAT);
+  // sheet.getRange(nu+":"+mb).setValue(range.getA1Notation());
 }
 
 function getItemList() {
@@ -229,6 +231,8 @@ function getItemList() {
    // Logger.log(array);
     return array;
 }
+//end add
+
 //edited by SS
 function addItems(selectedItemToPaste,itemQty,itemRoom){ 
   let sheet = activeSpreadSheet.getActiveSheet();
@@ -242,23 +246,19 @@ function addItems(selectedItemToPaste,itemQty,itemRoom){
   activeSpreadSheet.getRange(scolumnlet1+srow).setValue(itemRoom.toUpperCase());
   SpreadsheetApp.getActiveRange().setValue(selectedItemToPaste);
   activeSpreadSheet.getRange(scolumnlet2+srow).setValue(itemQty);
- // addForumlas();
-   //var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  //sheet.getRange(e.range.getRow(), col).setValue(selectedItemToPaste);
-
 }
 
 //added by SS
-function removeItems(itemQty, itemRoom){
-  let sheet = activeSpreadSheet.getActiveSheet();
-  srow = sheet.getActiveRange().getRow();
-  scolumn = sheet.getActiveRange().getColumn();
+// function removeItems(itemQty, itemRoom){
+//   let sheet = activeSpreadSheet.getActiveSheet();
+//   srow = sheet.getActiveRange().getRow();
+//   scolumn = sheet.getActiveRange().getColumn();
   
-  activeSpreadSheet.getRange(srow,scolumn-2).setValue(itemRoom);
-  SpreadsheetApp.getActiveRange.setValue("");
-  activeSpreadSheet.getRange(srow, scolumn);
-  sheet.setActiveRange(sheet.getRange(srow+1, scolumn));
- }
+//   activeSpreadSheet.getRange(srow,scolumn-2).setValue(itemRoom);
+//   SpreadsheetApp.getActiveRange.setValue("");
+//   activeSpreadSheet.getRange(srow, scolumn);
+//   sheet.setActiveRange(sheet.getRange(srow+1, scolumn));
+//  }
 
 
 function getBOMList() {
@@ -276,7 +276,7 @@ function addBOMtoTemplate() {
   var result = ui.prompt("Please input BOM Type");
   var bomName = result.getResponseText();
  
-  //we will make sure BOM Type doesn't already exist or that would not be good
+  //make sure BOM Type doesn't already exist
   //var ss = SpreadsheetApp.getActiveSpreadsheet();
   var ss = SpreadsheetApp.openById("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4"); 
   var bomSheet = ss.getSheetByName("BOM");
@@ -286,8 +286,13 @@ function addBOMtoTemplate() {
 
   for (var i = 0; i < (bomSheetLastRow - 1); i++) {
     var bomType = bomSheetValue[i][0];
-    if (bomName === bomType ){
+    if (bomName===""){
+      ohNoUserBadInput = false;
+    }
+    else if (bomName === bomType ){
       ohNoUserBadInput = true;
+    }else{
+      ohNoUserBadInput=false;
     }
 
   }
@@ -312,7 +317,7 @@ function addBOMtoTemplate() {
   }
 
 }
-
+//end add
 function openDialog() {
   var html = HtmlService.createTemplateFromFile('dataform')
     .evaluate();
@@ -324,12 +329,6 @@ function openDialog() {
 function include(File) {
   return HtmlService.createHtmlOutputFromFile(File).getContent();
 };
-
-// function newItemAddition(){
-//   let ui = 
-
-
-// }
 
 function insertItems(selectedRoomNameInput, selectedBomType) {
 
@@ -496,16 +495,16 @@ function doimp(){
   importList("https://docs.google.com/spreadsheets/d/1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4/edit#gid=0", 1, 1, "Master Sheet");
 }
 
-function onEdit(e) {
-  const row = e.range.getRow();
-  const col = e.range.getColumn();
-  var scolumnlet2 = getLetter(col);
-  // if(e.source.getActiveSheet().getName()==="Sheet37"&& col >= 1 && row=== 3 && e.value=== 'TRUE'){
-  //   alerto ="original cell changed to: "+e.source.getActiveSheet().getRange(scolumnlet2+row).getValue();
-  // }
-  // e.source.getActiveSheet().getRange("C1").setValue(e.source.getActiveSheet().getRange(scolumnlet2+row).getValue());
-  return e.source.getActiveSheet().getRange(scolumnlet2+row).getValue();
-}
+// function onEdit(e) {
+//   const row = e.range.getRow();
+//   const col = e.range.getColumn();
+//   var scolumnlet2 = getLetter(col);
+//   // if(e.source.getActiveSheet().getName()==="Sheet37"&& col >= 1 && row=== 3 && e.value=== 'TRUE'){
+//   //   alerto ="original cell changed to: "+e.source.getActiveSheet().getRange(scolumnlet2+row).getValue();
+//   // }
+//   // e.source.getActiveSheet().getRange("C1").setValue(e.source.getActiveSheet().getRange(scolumnlet2+row).getValue());
+//   return e.source.getActiveSheet().getRange(scolumnlet2+row).getValue();
+// }
 
 // function sendNotification(sheet, changingarea) {
 //   var arrg = [];
@@ -551,6 +550,8 @@ function getFirstEmptyBOMRowWholeRow(sheet) {
       var letter = String.fromCharCode(num + 64);
       return letter;
     }
+//end add
+
 
 function getLastDataCol(sheet) {
   var lastCol = sheet.getLastColumn();
