@@ -193,26 +193,12 @@ const activeSheet = SpreadsheetApp.getActiveSheet();
 //todo: instantiate this variable when the proper spreadsheet is active
 // var cellulor = activeSpreadSheet.getSelection().getActiveRangeList().getRanges();
 
-//use the cellulor instead of the getRange to grab all the cells to copy. figure out how the 
-function addRow() {
-  var ui = SpreadsheetApp.getUi();
-  var sheet = activeSpreadSheet.getActiveSheet(); 
-  var range = sheet.getActiveRange(); 
-  if (range.getFormulas())
-  {
-    sheet.insertRowsBefore(rowe, rownum);
-    let stringo = range.getA1Notation();
-    let st = stringo.split(":")[0]
-    let ri = stringo.split(":")[1]
-    let nu = parseInt(st); 
-    let mb = parseInt(ri);
-    let er = nu+rownum;
-    let is = mb+rownum;
-    //range in getRange is one to copy
-    range.setValues(sheet.getRange(er+":"+is).getFormulas());
-  }else{
-  ui.alert("uh, no formulas to copy");
-  }
+function addRow(){
+  var sheet = activeSpreadSheet.getActiveSheet();
+  var range = sheet.getActiveRange();
+  var fill = sheet.getRange("2:2");
+  sheet.insertRowsBefore(sheet.getActiveCell().getRow(), range.getValues().length);
+  fill.copyTo(range);
 }
 
 function getItemList() {
@@ -230,6 +216,7 @@ function addItems(selectedItemToPaste,itemQty,itemRoom){
   let sheet = activeSpreadSheet.getActiveSheet();
   let srow = sheet.getActiveRange().getRow();
   let scolumn = sheet.getActiveRange().getColumn();
+
   //change scolumn to letter, change s
   let scolumnlet1 = getLetter(scolumn-2);
   let scolumnlet2 = getLetter(scolumn+1);
@@ -259,7 +246,7 @@ function getBOMList() {
  // Logger.log(data);
   return data;
 }
-
+//end edit
 
 function addBOMtoTemplate() {
   var ui = SpreadsheetApp.getUi();
@@ -307,7 +294,6 @@ function addBOMtoTemplate() {
   }
 
 }
-
 //end add
 function openDialog() {
   var html = HtmlService.createTemplateFromFile('dataform')
@@ -343,6 +329,8 @@ function insertItems(selectedRoomNameInput, selectedBomType) {
       var rangeStart = sel[i].getA1Notation();
       range += sel[i].getA1Notation() + ', ';
     }
+
+
     selectedRoomNames.forEach(function (selectedRoomName) {
       if ((selectedRoomName.length > 0) && (selectedRoomName !== " ")) {
         var selectedValuesArrayCount = selectedValues.length;
@@ -362,6 +350,7 @@ function insertItems(selectedRoomNameInput, selectedBomType) {
        //  SpreadsheetApp.getUi().alert(internalLastRow);
     });
   }
+
     // designate necessary information to modify and read from sheet.
     var bomSheet = bs.getSheetByName("BOM");
     var bomSheetLastRow = getFirstEmptyBOMRowWholeRow(bomSheet);
