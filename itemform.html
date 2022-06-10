@@ -13,20 +13,12 @@
     
 
     <script>
-      function master(){
+      function insertm(){
       var item = document.getElementById('item').value;
       var desc = document.getElementById('desc').value;
       var cost = document.getElementById('cost').value;
-      console.log(item);
-      // google.script.run.customSheet(item,desc,cost);
-      google.script.run.masterSheet(item, desc, cost);
-      }
-      
-      function custom(){
-      var item = document.getElementById('item').value;
-      var desc = document.getElementById('desc').value;
-      var cost = document.getElementById('cost').value;
-      google.script.run.customSheet(item,desc,cost);
+      var sh = document.getElementById('sheetname').value;
+      google.script.run.sheetInsertion(item,desc,cost, sh);
       // google.script.run.customSheet();
       }
     </script>
@@ -50,8 +42,8 @@
     </div>
     </div>
     <div class="col-10">
-     <button type="button" class="btn btn-outline-primary" onclick="custom()">Add to Custom Sheet</button>
-     <button type="button" class="btn btn-outline-primary" onclick="master()">Add to Master Sheet</button>
+      <label for="lRatio"> name of sheet to write to:</label><input type="text" id="sheetname">
+     <button type="button" class="btn btn-outline-primary" onclick="insertm()">Add to Named Sheet</button>
      </div>
 </div>
   </body>
