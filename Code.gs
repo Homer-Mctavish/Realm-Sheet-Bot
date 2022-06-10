@@ -146,46 +146,6 @@ if(sheet.getName() == "Hardware Ordering"){
 }
 
 }
-
-function addForumlas(){
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getActiveSheet();
-    var sheetName = ss.getActiveSheet().getName();
-
-
-  if (sheetName == "Internal") {     
-    var activeColumn = sheet.getActiveCell().getColumn();
-
-    // when the itemcode  changes we look up the descriptino and cost
-    if (activeColumn == 3) {
-      
-
-      var activeRow = sheet.getActiveCell().getRow(); 
-
-      var itemcodeSelected = sheet.getRange(activeRow, 3).getValue();
-      //SpreadsheetApp.getUi().alert(itemcodeSelected);
-
-      sheet.getRange(activeRow,5).setFormula("=IF(C" + activeRow + " = \"\",\"\",QUERY('Item Import'!A2:D,\"SELECT B WHERE A = '" + itemcodeSelected + "'\"; 0))");
-      sheet.getRange(activeRow,6).setFormula("=ROUND(L" + activeRow + ",-1)");
-      sheet.getRange(activeRow,7).setFormula("=IF(C" + activeRow + "=\"\",\"\",SUMIF(VLOOKUP(Internal!C" + activeRow + ",'Item Import'!A2:D,3,0),\"<>#N/A\"))");
-      sheet.getRange(activeRow,8).setFormula("=G" + activeRow + "*D" + activeRow + "");
-      sheet.getRange(activeRow,9).setFormula("=IF(C" + activeRow + "=\"\",\"\",SUMIF(VLOOKUP(Internal!C" + activeRow + ",'Item Import'!A2:D,4,0),\"<>#N/A\"))");  
-      sheet.getRange(activeRow,10).setFormula("=I" + activeRow + "*D" + activeRow + "");
-      sheet.getRange(activeRow,11).setFormula("=I" + activeRow + "*(1-'Project Calcs'!$C$10)"); 
-      sheet.getRange(activeRow,12).setFormula("=K" + activeRow + "*D" + activeRow + ""); 
-      sheet.getRange(activeRow,13).setFormula("=J" + activeRow + "*'Project Calcs'!$C$6"); 
-      sheet.getRange(activeRow,14).setFormula("=J" + activeRow + "*'Project Calcs'!$C$3");  
-      sheet.getRange(activeRow,15).setFormula("=N" + activeRow + "*'Project Calcs'!$C$4"); 
-      sheet.getRange(activeRow,16).setFormula("=N" + activeRow + "*'Project Calcs'!$C$5*(1-'Project Calcs'!$C$9)"); 
-      sheet.getRange(activeRow,17).setFormula("=L" + activeRow + "-H" + activeRow + ""); 
-      sheet.getRange(activeRow,18).setFormula("=P" + activeRow + "-O" + activeRow + "");
-      sheet.getRange(activeRow,19).setFormula("=M" + activeRow + "*'Project Calcs'!$C$7");  
-      sheet.getRange(activeRow,20).setFormula("=R" + activeRow + "+Q" + activeRow + "+S" + activeRow);  
-      sheet.getRange(activeRow,21).setFormula("=IF(Internal!B"+ activeRow +"=\"\",\"\",Internal!I"+ activeRow +"*'Project Calcs'!$C$8)");
-
-    }
-  };
-}
 */
 //added by SS
 const activeSpreadSheet = SpreadsheetApp.getActiveSpreadsheet();
@@ -193,12 +153,17 @@ const activeSheet = SpreadsheetApp.getActiveSheet();
 //todo: instantiate this variable when the proper spreadsheet is active
 // var cellulor = activeSpreadSheet.getSelection().getActiveRangeList().getRanges();
 
+
+
+//can be set to an onEdit solution where rather than asynchronusly adding some cells via highlight, whatever added cells just have the range coppied to.
 function addRow(){
   var sheet = activeSpreadSheet.getActiveSheet();
   var range = sheet.getActiveRange();
   var fill = sheet.getRange("2:2");
+  SpreadsheetApp.flush();
   sheet.insertRowsBefore(sheet.getActiveCell().getRow(), range.getValues().length);
-  fill.copyTo(range);
+  SpreadsheetApp.flush();
+  fill.copyTo(range, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
 }
 
 function getItemList() {
@@ -292,7 +257,6 @@ function addBOMtoTemplate() {
       qty+=2;
     }
   }
-
 }
 //end add
 function openDialog() {
@@ -406,7 +370,6 @@ function customSheet(item, desc, cost){
   mSheet.getRange("C"+inserto).setValue(cost);
 }
 
-
 function rowLastVal(range, firstRow) {
   // range is passed as an array of values from the indicated spreadsheet cells.
   for (var i = range.length - 1;  i >= 0;  -- i) {
@@ -422,37 +385,25 @@ function itemDesc(){
   }
 }
 
-
-//change to general formula maintainer using function(sheet, formula)
-//also use the insert items foreach loop to do each formula in one pass
-//in future make the function take only these things, and the range parameters will be some implementation of a method for future activespreadsheet object
-//set the value of the range as protected after filling with formula
-// function keepvLookup(start, end){
-//   var spreader= activeSpreadSheet.getSheetByName("Sheet37");
-//   spreader.getRange(start, end).setValue(vLookup("Sheet37", "C2", ""))
-
-// }
-
 function testingfd(){
   var j=activeSpreadSheet.getSheetByName("Sheet37");
   j.getRange("A19:A").setValue(j.getRange("$A$2:D").getValues());
 }
 //VLOOKUP(C2,'Item Import'!$A$2:D,2,0)
-//C2=start(start is the cell you want to grab the value of I.E. C2), 'Item Import'!$A$2:D= start:end, range of items you want to vlookup, and 2=index, or the location to start searching
-//
-function vLookup(sheet, start, end){
+//C2=value(value is the cell you want to grab the value of I.E. C2), 'Item Import'!$A$2:D= sheet searchrange, where $A$2:D= is searchrange and 'Item Import'! is sheet, and 2=place, or the location to return the value of.
+//grabit is the column of data you wish to get
+function vLookup(sheet, value, searchRange, grabit, place){
   var s = activeSpreadSheet.getActiveSheet();     
-  var data = s.getSheetByName(sheet);
-  var searchValue = s.getRange(start).getValue();
-  var dataValues = data.getRange(end).getValues();
+  var data = activeSpreadSheet.getSheetByName(sheet);
+  var searchValue = s.getRange(value).getValue();
+  var dataValues = data.getRange(searchRange).getValues();
   var dataList = dataValues.join("ღ").split("ღ");
   var index = dataList.indexOf(searchValue);
   if (index === -1) {
       throw new Error('Value not found')
   } else {
-      var row = index + 3;
-      var foundValue = data.getRange(inputend+row).getValue();
-      s.getRange(inputstart+":"+inputend).setValue(foundValue);
+      var foundValue = data.getRange(grabit+(index+2)).getValue();
+      s.getRange(place).setValue(foundValue);
   }
 }
 
@@ -499,8 +450,32 @@ function doimp(){
 // return arrg;
 // };
 
+function getLastDataCol(sheet) {
+  var lastCol = sheet.getLastColumn();
+  var colval = getLetter(lastCol);
+  var range = sheet.getRange(colval+"1");
+  if (range.getValue() !== "") {
+    return lastCol;
+  } else {
+    return range.getNextDataCell(SpreadsheetApp.Direction.NEXT).getColumn();
+  }              
+}
 
+
+function getLastDataRow(sheet) {
+  var lastRow = sheet.getLastRow();
+  var range = sheet.getRange("A" + lastRow);
+  if (range.getValue() !== "") {
+    return lastRow;
+  } else {
+    return range.getNextDataCell(SpreadsheetApp.Direction.UP).getRow();
+  }              
+}
+
+//end add
+//optimised by SS
   function isOdd(num) { return num & 1; };
+//end optimzation
 
   function getFirstEmptyRowWholeRow() {
     var sheet = SpreadsheetApp.getActiveSheet();
@@ -527,27 +502,3 @@ function getFirstEmptyBOMRowWholeRow(sheet) {
       var letter = String.fromCharCode(num + 64);
       return letter;
     }
-//end add
-
-
-function getLastDataCol(sheet) {
-  var lastCol = sheet.getLastColumn();
-  var colval = getLetter(lastCol);
-  var range = sheet.getRange(colval+"1");
-  if (range.getValue() !== "") {
-    return lastCol;
-  } else {
-    return range.getNextDataCell(SpreadsheetApp.Direction.NEXT).getColumn();
-  }              
-}
-
-
-function getLastDataRow(sheet) {
-  var lastRow = sheet.getLastRow();
-  var range = sheet.getRange("A" + lastRow);
-  if (range.getValue() !== "") {
-    return lastRow;
-  } else {
-    return range.getNextDataCell(SpreadsheetApp.Direction.UP).getRow();
-  }              
-}
