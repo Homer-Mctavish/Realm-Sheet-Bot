@@ -153,6 +153,15 @@ const activeSheet = SpreadsheetApp.getActiveSheet();
 //todo: instantiate this variable when the proper spreadsheet is active
 // var cellulor = activeSpreadSheet.getSelection().getActiveRangeList().getRanges();
 
+function protection(rabge){
+  var protection = rabge.protect();
+  var me = Session.getEffectiveUser();
+  protection.addEditor(me);
+  protection.removeEditors(protection.getEditors());
+  if (protection.canDomainEdit()) {
+    protection.setDomainEdit(false);
+  }
+}
 
 
 //can be set to an onEdit solution where rather than asynchronusly adding some cells via highlight, whatever added cells just have the range coppied to.
@@ -362,6 +371,14 @@ function masterSheet(item, desc, cost){
   mSheet.getRange("C"+inserto).setValue(cost);
 }
 
+function sheetInsertion(item, desc, cost, name){
+  let mSheet = activeSpreadSheet.getSheetByName(name); 
+  let inserto = getLastDataRow(mSheet)+1;
+  mSheet.getRange("A"+inserto).setValue(item);
+  mSheet.getRange("B"+inserto).setValue(desc);
+  mSheet.getRange("C"+inserto).setValue(cost);
+}
+
 function customSheet(item, desc, cost){
   let mSheet = activeSpreadSheet.getSheetByName("Custom Sheet") 
   let inserto = getLastDataRow(mSheet)+1;
@@ -389,8 +406,9 @@ function testingfd(){
   var j=activeSpreadSheet.getSheetByName("Sheet37");
   j.getRange("A19:A").setValue(j.getRange("$A$2:D").getValues());
 }
+
 //VLOOKUP(C2,'Item Import'!$A$2:D,2,0)
-//C2=value(value is the cell you want to grab the value of I.E. C2), 'Item Import'!$A$2:D= sheet searchrange, where $A$2:D= is searchrange and 'Item Import'! is sheet, and 2=place, or the location to return the value of.
+//C2=value(value is the cell you want to search for of I.E. C2), 'Item Import'!$A$2:D= sheet searchrange, where $A$2:D= is searchrange and 'Item Import'! is sheet, and 2=place, or the location to return the value of.
 //grabit is the column of data you wish to get
 function vLookup(sheet, value, searchRange, grabit, place){
   var s = activeSpreadSheet.getActiveSheet();     
