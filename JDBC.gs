@@ -1,4 +1,5 @@
-function getConnection(){
+var jcdb = {
+  conn: function getConnection(){
 try{
   var address = 'db4free.net:3306';
   var user = 'ferrisbu'; 
@@ -10,13 +11,14 @@ try{
 }catch(err){
   Logger.log('Failed with error %s', err)
 }
+},
+  stmt:conn.createStatement()
 }
 
 function createDatabase() {
   try {
-    const conn = Jdbc.getConnection('jdbc:mysql://yoursqlserver.example.com:3306/database_name',{user: 'username', password: 'password'});
-    conn.createStatement().execute('CREATE DATABASE ' + db);
-    conn.close();
+    jcdb.conn.stmt.execute('CREATE DATABASE ' + db);
+    jcdb.conn.close();
   } catch (err) {
     // TODO(developer) - Handle exception from the API
     Logger.log('Failed with an error %s', err.message);
@@ -28,7 +30,7 @@ function createDatabase() {
  */
 function createAdminUser() {
   try {
-    const conn = Jdbc.getConnection('jdbc:mysql://yoursqlserver.example.com:3306/database_name',{user: 'username', password: 'password'});
+    const conn = jcdb.conn;
     const stmt = conn.prepareStatement('CREATE USER ? IDENTIFIED BY ?');
     stmt.setString(1, user);
     stmt.setString(2, userPwd);
@@ -46,8 +48,7 @@ function createAdminUser() {
  */
 function createTable() {
   try {
-    const conn = Jdbc.getConnection('jdbc:mysql://yoursqlserver.example.com:3306/database_name',{user: 'username', password: 'password'});
-    let stmt = conn.createStatement().execute('CREATE TABLE entries ' +
+    let stmt = jcdb.conn.stmt.execute('CREATE TABLE entries ' +
       '(guestName VARCHAR(255), content VARCHAR(255), ' +
       'entryID INT NOT NULL AUTO_INCREMENT, PRIMARY KEY(entryID));');
     stmt.close();
@@ -59,8 +60,7 @@ function createTable() {
 
 function writeOneRecord() {
   try {
-    const conn = Jdbc.getConnection('jdbc:mysql://yoursqlserver.example.com:3306/database_name',{user: 'username', password: 'password'});
-    const stmt = conn.prepareStatement('INSERT INTO entries ' +
+    const stmt = jcdb.conn.prepareStatement('INSERT INTO entries ' +
       '(guestName, content) values (?, ?)');
     stmt.setString(1, 'First Guest');
     stmt.setString(2, 'Hello, world');
@@ -73,14 +73,13 @@ function writeOneRecord() {
 }
 
 /**
- * Write 500 rows of data to a table in a single batch.
+ * Write recordNum rows of data to a table in a single batch.
  */
 function writeManyRecords(recordNum) {
   try {
-    const conn = Jdbc.getConnection('jdbc:mysql://yoursqlserver.example.com:3306/database_name',{user: 'username', password: 'password'});
-    conn.setAutoCommit(false);
+    jcdb.conn.setAutoCommit(false);
     const start = new Date();
-    const stmt = conn.prepareStatement('INSERT INTO entries ' +
+    const stmt = jcdb.conn.prepareStatement('INSERT INTO entries ' +
       '(guestName, content) values (?, ?)');
     for (let i = 0; i < recordNum; i++) {
       stmt.setString(1, 'Name ' + i);
@@ -89,8 +88,8 @@ function writeManyRecords(recordNum) {
     }
     stmt.close();
     const batch = stmt.executeBatch();
-    conn.commit();
-    conn.close();
+    jcdb.conn.commit();
+    jcdb.conn.close();
 
     const end = new Date();
     Logger.log('Time elapsed: %sms for %s rows.', end - start, batch.length);
@@ -102,9 +101,9 @@ function writeManyRecords(recordNum) {
 
 function readFromTable() {
   try {
-    const conn = Jdbc.getConnection('jdbc:mysql://yoursqlserver.example.com:3306/database_name',{user: 'username', password: 'password'});
+    resulto = []
     const start = new Date();
-    const stmt = conn.createStatement();
+    const stmt = jcdb.conn.stmt;
     stmt.setMaxRows(1000);
     const results = stmt.executeQuery('SELECT * FROM entries');
     const numCols = results.getMetaData().getColumnCount();
@@ -113,17 +112,25 @@ function readFromTable() {
       let rowString = '';
       for (let col = 0; col < numCols; col++) {
         rowString += results.getString(col + 1) + '\t';
+        resulto.push(results);
       }
       Logger.log(rowString);
     }
 
     results.close();
     stmt.close();
-
     const end = new Date();
     Logger.log('Time elapsed: %sms', end - start);
+    return resulto;
   } catch {
     // TODO(developer) - Handle exception from the API
     Logger.log('Failed with an error %s', err.message);
   }
+}
+
+function importtosheets(name){
+  var imptar = Spreadsheet.getSheetByName(name);
+  var values = readFromTable()
+  var rowstocopy = getLastDataRow(s);
+  var colstocopy = getLastDataCol(s);
 }
