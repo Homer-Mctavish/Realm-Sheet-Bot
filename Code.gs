@@ -9,7 +9,9 @@ function showSidebar() {
 function onOpen() {
   SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
     .createMenu('Realm Custom Scripts')
+    .addSubMenu(SpreadsheetApp.getUi().createMenu('Add New Connection').addItem('Mysql', 'createMysqlPrompt').addItem('SQL Server','createMssqlPrompt'))
     .addItem('Show Estimator sidebar', 'showSidebar')
+    .addItem('Refresh', 'refreshPrompt')
     .addToUi();
 }
 
@@ -57,13 +59,6 @@ function runRealmItemAdd() {
     var htmlOutput = t.evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).setHeight(600).setWidth(900);
     var doc = SpreadsheetApp.getActive();
     doc.show(htmlOutput);
-  
-  
-  /*  var html = HtmlService.createHtmlOutputFromFile('ClientMusicForm')
-      .setTitle('Client Service Request')
-      .setWidth(450);
-       SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
-      .showSidebar(html); */
   
 }
 
@@ -148,6 +143,15 @@ if(sheet.getName() == "Hardware Ordering"){
 }
 */
 //added by SS
+var ssApp = {
+  activeSpreadSheet: SpreadsheetApp.getActiveSpreadsheet(),
+  activeSheet: SpreadsheetApp.getActiveSheet(),
+  namedSheet: function(name){ activeSpreadSheet.getSheetByName(name)},
+  idSheet: function(id){activeSpreadSheet.openByID},
+  setA1Val: function(range, value){
+    activeSpreadSheet.getRange(range).setValue(value);
+  }
+}
 const activeSpreadSheet = SpreadsheetApp.getActiveSpreadsheet();
 const activeSheet = SpreadsheetApp.getActiveSheet();
 //todo: instantiate this variable when the proper spreadsheet is active
@@ -164,39 +168,61 @@ function protection(rabge){
 }
 
 
-//can be set to an onEdit solution where rather than asynchronusly adding some cells via highlight, whatever added cells just have the range coppied to.
+
+//can be turned into an onEdit solution where rather than asynchronusly adding some cells via highlight, whatever added cells just have the range coppied to.
+/**
+ * sets highlighted number of rows as number to be added, preserves formulas contained within all of them. 
+ * Only works (and only should work) when rows are highlighted entirely across and add rows before is chosen as the method of addition.
+ */
 function addRow(){
-  var sheet = activeSpreadSheet.getActiveSheet();
+  var sheet = ssApp.activeSheet;
   var range = sheet.getActiveRange();
-  var fill = sheet.getRange("2:2");
-  SpreadsheetApp.flush();
-  sheet.insertRowsBefore(sheet.getActiveCell().getRow(), range.getValues().length);
-  SpreadsheetApp.flush();
-  fill.copyTo(range, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
+    try {
+    let fill = sheet.getRange("2:2");
+    SpreadsheetApp.flush();
+    sheet.insertRowsBefore(sheet.getActiveCell().getRow(), range.getValues().length);
+    SpreadsheetApp.flush();
+    fill.copyTo(range, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
+  } catch (err){
+    Logger.log('Failed with an error %s', + err.message)
+  }
 }
 
+
 function getItemList() {
-    var sheet = activeSpreadSheet.getSheetByName("Item Import");
-    var data = sheet.getDataRange().getValues()
-    var array = [];
+    var sheet = ssApp.activeSpreadSheet.getSheetByName("Item Import");
+    try {
+    let data = sheet.getDataRange().getValues()
+    let array = [];
     data.forEach(function(row){array.push([row[0],row[1]]); });
    // Logger.log(array);
     return array;
+  } catch (err){
+	Logger.log('Failed with an error %s', + err.message)
+  }
 }
 //end add
 
 //edited by SS
+/**
+ * adds single item to the internal sheet. Active cell (and it can only be one cell) must be the Item Name column 
+ * and in the row you wish to add the details into.
+ * 
+ * @param {String}  selectedItemToPaste:  the item you wish to insert by name
+ * @param {String}  itemQty:  the number of item to add
+ * @param {String}  itemRoom:   name of room item will be added to.
+ */
 function addItems(selectedItemToPaste,itemQty,itemRoom){ 
-  let sheet = activeSpreadSheet.getActiveSheet();
+  let sheet = ssApp.activeSheet;
   let srow = sheet.getActiveRange().getRow();
   let scolumn = sheet.getActiveRange().getColumn();
 
   //change scolumn to letter, change s
   let scolumnlet1 = getLetter(scolumn-2);
   let scolumnlet2 = getLetter(scolumn+1);
-  activeSpreadSheet.getRange(scolumnlet1+srow).setValue(itemRoom.toUpperCase());
+  ssApp.activeSpreadSheet.getRange(scolumnlet1+srow).setValue(itemRoom.toUpperCase());
   SpreadsheetApp.getActiveRange().setValue(selectedItemToPaste);
-  activeSpreadSheet.getRange(scolumnlet2+srow).setValue(itemQty);
+  ssApp.activeSpreadSheet.getRange(scolumnlet2+srow).setValue(itemQty);
 }
 
 //added by SS
@@ -213,7 +239,7 @@ function addItems(selectedItemToPaste,itemQty,itemRoom){
 
 
 function getBOMList() {
-  var ss = SpreadsheetApp.openById("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4"); 
+  const ss = SpreadsheetApp.openById("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4"); 
   var roomTypeSheet = ss.getSheetByName("BOM");
   var getLastRow = roomTypeSheet.getLastRow();
   var data = roomTypeSheet.getRange(2, 1, getLastRow - 1, 2).getValues();
@@ -229,7 +255,6 @@ function addBOMtoTemplate() {
  
   //make sure BOM Type doesn't already exist
   //var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var ss = SpreadsheetApp.openById("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4"); 
   var bomSheet = ss.getSheetByName("BOM");
   var bomSheetLastRow = bomSheet.getLastRow()+1;
   var bomSheetValue = bomSheet.getRange("A2:" + "ZZ" + bomSheetLastRow).getValues();
@@ -281,13 +306,12 @@ function include(File) {
 };
 
 function insertItems(selectedRoomNameInput, selectedBomType) {
-
+    const ss = SpreadsheetApp.openById("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4"); 
     var selectedRoomNames = [];
     selectedRoomNames = selectedRoomNameInput.split(",");
     var selectedBomType = selectedBomType;
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var bs = SpreadsheetApp.openById("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4"); 
-    var internalSheet = ss.getSheetByName("Internal");
+    var sheet = SpreadsheetApp.getActiveSpreadsheet();
+    var internalSheet = sheet.getSheetByName("Internal");
 
     var internalLastRow =  getLastDataRow(internalSheet) +2;
 
@@ -325,7 +349,7 @@ function insertItems(selectedRoomNameInput, selectedBomType) {
   }
 
     // designate necessary information to modify and read from sheet.
-    var bomSheet = bs.getSheetByName("BOM");
+    var bomSheet = ss.getSheetByName("BOM");
     var bomSheetLastRow = getFirstEmptyBOMRowWholeRow(bomSheet);
     var bomSheetLastColum = bomSheet.getLastColumn() + 1;
     var bomSheetValue = bomSheet.getRange("A2:" + "BQ" + bomSheetLastRow).getValues();
@@ -363,28 +387,24 @@ function insertItems(selectedRoomNameInput, selectedBomType) {
   }
 
 //added by SS
-function masterSheet(item, desc, cost){
-  let mSheet = activeSpreadSheet.getSheetByName("Master Sheet"); 
-  let inserto = getLastDataRow(mSheet)+1;
-  mSheet.getRange("A"+inserto).setValue(item);
-  mSheet.getRange("B"+inserto).setValue(desc);
-  mSheet.getRange("C"+inserto).setValue(cost);
-}
-
+/**
+ * inserts an item, discription cost and name to the named spreadsheet
+ * 
+ * @param {String}  item:  the item you wish to insert by name. inserted at the first column of the named sheet
+ * @param {String}  desc:  the description one should give to the item. inserted at the second column of the sheet
+ * @param {String}  itemRoom:   cost of the item. inserted at the third column of the sheet.
+ * @param {String}  name:    name of the sheet. to be obtained from the UI. case sensitive.
+ */
 function sheetInsertion(item, desc, cost, name){
   let mSheet = activeSpreadSheet.getSheetByName(name); 
   let inserto = getLastDataRow(mSheet)+1;
+  try {
   mSheet.getRange("A"+inserto).setValue(item);
   mSheet.getRange("B"+inserto).setValue(desc);
   mSheet.getRange("C"+inserto).setValue(cost);
-}
-
-function customSheet(item, desc, cost){
-  let mSheet = activeSpreadSheet.getSheetByName("Custom Sheet") 
-  let inserto = getLastDataRow(mSheet)+1;
-  mSheet.getRange("A"+inserto).setValue(item);
-  mSheet.getRange("B"+inserto).setValue(desc);
-  mSheet.getRange("C"+inserto).setValue(cost);
+  } catch (err){
+    Logger.log('Failed with an error %s', + err.message)
+  }
 }
 
 function rowLastVal(range, firstRow) {
@@ -410,6 +430,15 @@ function testingfd(){
 //VLOOKUP(C2,'Item Import'!$A$2:D,2,0)
 //C2=value(value is the cell you want to search for of I.E. C2), 'Item Import'!$A$2:D= sheet searchrange, where $A$2:D= is searchrange and 'Item Import'! is sheet, and 2=place, or the location to return the value of.
 //grabit is the column of data you wish to get
+
+/**
+ * Searches a range for a passed cell value from active sheet in another sheet. 
+ * if found sets the specified adjacent cell value from that other sheet into the active sheet's cell.
+ * 
+ * @param {String}  sheet:  the sheet you want to search
+ * @param {String}  itemQty:  the number of item to add
+ * @param {String}  itemRoom:   name of room item will be added to.
+ */
 function vLookup(sheet, value, searchRange, grabit, place){
   var s = activeSpreadSheet.getActiveSheet();     
   var data = activeSpreadSheet.getSheetByName(sheet);
