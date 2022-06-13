@@ -9,7 +9,9 @@ function showSidebar() {
 function onOpen() {
   SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
     .createMenu('Realm Custom Scripts')
+    .addSubMenu(SpreadsheetApp.getUi().createMenu('Add New Connection').addItem('Mysql', 'createMysqlPrompt').addItem('SQL Server','createMssqlPrompt'))
     .addItem('Show Estimator sidebar', 'showSidebar')
+    .addItem('Refresh', 'refreshPrompt')
     .addToUi();
 }
 
@@ -164,28 +166,49 @@ function protection(rabge){
 }
 
 
-//can be set to an onEdit solution where rather than asynchronusly adding some cells via highlight, whatever added cells just have the range coppied to.
+//can be turned into an onEdit solution where rather than asynchronusly adding some cells via highlight, whatever added cells just have the range coppied to.
+/**
+ * sets highlighted number of rows as number to be added, preserves formulas contained within all of them. 
+ * Only works (and only should work) when rows are highlighted entirely across and add rows before is chosen as the method of addition.
+ */
 function addRow(){
   var sheet = activeSpreadSheet.getActiveSheet();
   var range = sheet.getActiveRange();
-  var fill = sheet.getRange("2:2");
-  SpreadsheetApp.flush();
-  sheet.insertRowsBefore(sheet.getActiveCell().getRow(), range.getValues().length);
-  SpreadsheetApp.flush();
-  fill.copyTo(range, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
+    try {
+    let fill = sheet.getRange("2:2");
+    SpreadsheetApp.flush();
+    sheet.insertRowsBefore(sheet.getActiveCell().getRow(), range.getValues().length);
+    SpreadsheetApp.flush();
+    fill.copyTo(range, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
+  } catch (err){
+    Logger.log('Failed with an error %s', + err.message)
+  }
 }
+
 
 function getItemList() {
     var sheet = activeSpreadSheet.getSheetByName("Item Import");
-    var data = sheet.getDataRange().getValues()
-    var array = [];
+    try {
+    let data = sheet.getDataRange().getValues()
+    let array = [];
     data.forEach(function(row){array.push([row[0],row[1]]); });
    // Logger.log(array);
     return array;
+  } catch (err){
+	Logger.log('Failed with an error %s', + err.message)
+  }
 }
 //end add
 
 //edited by SS
+/**
+ * adds single item to the internal sheet. Active cell (and it can only be one cell) must be the Item Name column 
+ * and in the row you wish to add the details into.
+ * 
+ * @param {String}  selectedItemToPaste:  the item you wish to insert by name
+ * @param {String}  itemQty:  the number of item to add
+ * @param {String}  itemRoom:   name of room item will be added to.
+ */
 function addItems(selectedItemToPaste,itemQty,itemRoom){ 
   let sheet = activeSpreadSheet.getActiveSheet();
   let srow = sheet.getActiveRange().getRow();
@@ -363,12 +386,24 @@ function insertItems(selectedRoomNameInput, selectedBomType) {
   }
 
 //added by SS
+/**
+ * inserts an item, discription cost and name to the named spreadsheet
+ * 
+ * @param {String}  item:  the item you wish to insert by name. inserted at the first column of the named sheet
+ * @param {String}  desc:  the description one should give to the item. inserted at the second column of the sheet
+ * @param {String}  itemRoom:   cost of the item. inserted at the third column of the sheet.
+ * @param {String}  name:    name of the sheet. to be obtained from the UI. case sensitive.
+ */
 function sheetInsertion(item, desc, cost, name){
   let mSheet = activeSpreadSheet.getSheetByName(name); 
   let inserto = getLastDataRow(mSheet)+1;
+  try {
   mSheet.getRange("A"+inserto).setValue(item);
   mSheet.getRange("B"+inserto).setValue(desc);
   mSheet.getRange("C"+inserto).setValue(cost);
+  } catch (err){
+    Logger.log('Failed with an error %s', + err.message)
+  }
 }
 
 function rowLastVal(range, firstRow) {
@@ -394,6 +429,14 @@ function testingfd(){
 //VLOOKUP(C2,'Item Import'!$A$2:D,2,0)
 //C2=value(value is the cell you want to search for of I.E. C2), 'Item Import'!$A$2:D= sheet searchrange, where $A$2:D= is searchrange and 'Item Import'! is sheet, and 2=place, or the location to return the value of.
 //grabit is the column of data you wish to get
+
+/**
+ * Searches a range for a passed parameter value and declares whether or not it is found
+ * 
+ * @param {String}  selectedItemToPaste:  the item you wish to insert by name
+ * @param {String}  itemQty:  the number of item to add
+ * @param {String}  itemRoom:   name of room item will be added to.
+ */
 function vLookup(sheet, value, searchRange, grabit, place){
   var s = activeSpreadSheet.getActiveSheet();     
   var data = activeSpreadSheet.getSheetByName(sheet);
