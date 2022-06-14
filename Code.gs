@@ -9,9 +9,9 @@ function showSidebar() {
 function onOpen() {
   SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
     .createMenu('Realm Custom Scripts')
-    .addSubMenu(SpreadsheetApp.getUi().createMenu('Add New Connection').addItem('Mysql', 'createMysqlPrompt').addItem('SQL Server','createMssqlPrompt'))
+    // .addSubMenu(SpreadsheetApp.getUi().createMenu('Add New Connection').addItem('Mysql', 'createMysqlPrompt').addItem('SQL Server','createMssqlPrompt'))
     .addItem('Show Estimator sidebar', 'showSidebar')
-    .addItem('Refresh', 'refreshPrompt')
+    // .addItem('Refresh', 'refreshPrompt')
     .addToUi();
 }
 
@@ -47,10 +47,13 @@ function addImportrangePermission_(fileId, donorId) {
 }
 
 //added by SS
-function doGet() {
-    return HtmlService.createTemplateFromFile('itemform.html')
+function doGet(e) {
+  if(!e.parameter.page){
+        return HtmlService.createTemplateFromFile('itemform.html')
         .evaluate() // evaluate MUST come before setting the Sandbox mode
-        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+  } 
+  return HtmlService.createTemplateFromFile('sqlconn.html').evaluate().setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 function runRealmItemAdd() {
@@ -62,86 +65,6 @@ function runRealmItemAdd() {
   
 }
 
-
-/*
-function onEdit(event) {
-  var sheet = SpreadsheetApp.getActiveSheet();
-
-  if( sheet.getName() == "Internal" ) { //checks that we're on the correct sheet
-    var r = event.range;
-    if( r.getColumn() == 3 ) { //checks the column
-  var activeRow=  r.getRow();
-  var itemcodeSelected = sheet.getRange(r.getRow(), 3).getValue();
-  r.offset(0, 2).setFormula("=IF(C" + activeRow + " = \"\",\"\",VLOOKUP(C" + activeRow + ",'Item Import'!$A$2:D,2,0))");
- //     r.offset(0, 2).setFormula("=IF(C" + activeRow + " = \"\",\"\",QUERY('Item Import'!A2:D,\"SELECT B WHERE A = ''\"; 0))");
-      r.offset(0, 3).setFormula("=ROUND(L" + activeRow + ",-1)");
-      r.offset(0, 4).setFormula("=IF(C" + activeRow + "=\"\",\"\",SUMIF(VLOOKUP(Internal!C" + activeRow + ",'Item Import'!$A$2:D,3,0),\"<>#N/A\"))");
-      r.offset(0, 5).setFormula("=G" + activeRow + "*D" + activeRow + "");
-      r.offset(0, 6).setFormula("=IF(C" + activeRow + "=\"\",\"\",SUMIF(VLOOKUP(Internal!C" + activeRow + ",'Item Import'!$A$2:D,4,0),\"<>#N/A\"))");  
-      r.offset(0, 7).setFormula("=I" + activeRow + "*D" + activeRow + "");
-      r.offset(0, 8).setFormula("=I" + activeRow + "*(1-'Project Calcs'!$C$10)"); 
-      r.offset(0, 9).setFormula("=K" + activeRow + "*D" + activeRow + ""); 
-      r.offset(0, 10).setFormula("=J" + activeRow + "*'Project Calcs'!$C$6"); 
-      r.offset(0, 11).setFormula("=J" + activeRow + "*'Project Calcs'!$C$3");  
-      r.offset(0, 12).setFormula("=N" + activeRow + "*'Project Calcs'!$C$4"); 
-      r.offset(0, 13).setFormula("=N" + activeRow + "*'Project Calcs'!$C$5*(1-'Project Calcs'!$C$9)"); 
-      r.offset(0, 14).setFormula("=L" + activeRow + "-H" + activeRow + ""); 
-      r.offset(0, 15).setFormula("=P" + activeRow + "-O" + activeRow + "");
-      r.offset(0, 16).setFormula("=M" + activeRow + "*'Project Calcs'!$C$7");  
-      r.offset(0, 17).setFormula("=R" + activeRow + "+Q" + activeRow + "+S" + activeRow);  
-      r.offset(0, 18).setFormula("=IF(Internal!B"+ activeRow +"=\"\",\"\",Internal!I"+ activeRow +"*'Project Calcs'!$C$8)");     
-  }
-}
-
-if(sheet.getName() == "Hardware Ordering"){ 
-  var r = event.range;
-  var col =  r.getColumn();
-
-
-  if( col == 3 ) { 
-      var watchCol = [3], 
-          userCol = [4],
-          stampCol = [5],
-          ind = watchCol.indexOf(event.range.columnStart);
-          row = event.range.getRow();
-      if ( ind == -1 || event.range.rowStart < 2) return;
-      
-      if(sheet.getRange(row,3).isChecked()==false){
-                sheet.getRange(row, stampCol[ind]).setValue("");
-                sheet.getRange(row, userCol[ind]).setValue("");
-      } else {
-                sheet.getRange(row, stampCol[ind]).setValue(event.value ? new Date() : null);
-                sheet.getRange(row, userCol[ind]).setValue(Session.getEffectiveUser().getUsername());
-          }
-
-    }
-
-  if( col == 6 ) { 
-    
-      var watchCol = [6], 
-          userCol = [8],
-          stampCol = [7],
-          ind = watchCol.indexOf(event.range.columnStart);
-          row = event.range.getRow();
-      if ( ind == -1 || event.range.rowStart < 2) return;
-      
-      if(sheet.getRange(row,6).isChecked()==false){
-                sheet.getRange(row, stampCol[ind]).setValue("");
-               // sheet.getRange(row, userCol[ind]).setValue("");
-      } else {
-                sheet.getRange(row, stampCol[ind]).setValue(event.value ? new Date() : null);
-               // sheet.getRange(row, userCol[ind]).setValue(Session.getEffectiveUser().getUsername());
-          }
-
-    }
-
-
-
-
-}
-
-}
-*/
 //added by SS
 var ssApp = {
   activeSpreadSheet: SpreadsheetApp.getActiveSpreadsheet(),
@@ -174,20 +97,20 @@ function protection(rabge){
  * sets highlighted number of rows as number to be added, preserves formulas contained within all of them. 
  * Only works (and only should work) when rows are highlighted entirely across and add rows before is chosen as the method of addition.
  */
+
 function addRow(){
   var sheet = ssApp.activeSheet;
   var range = sheet.getActiveRange();
     try {
     let fill = sheet.getRange("2:2");
     SpreadsheetApp.flush();
-    sheet.insertRowsBefore(sheet.getActiveCell().getRow(), range.getValues().length);
+    sheet.insertRowsAfter(range.getLastRow(), range.getValues().length);
     SpreadsheetApp.flush();
     fill.copyTo(range, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
   } catch (err){
     Logger.log('Failed with an error %s', + err.message)
   }
 }
-
 
 function getItemList() {
     var sheet = ssApp.activeSpreadSheet.getSheetByName("Item Import");
@@ -225,18 +148,6 @@ function addItems(selectedItemToPaste,itemQty,itemRoom){
   ssApp.activeSpreadSheet.getRange(scolumnlet2+srow).setValue(itemQty);
 }
 
-//added by SS
-// function removeItems(itemQty, itemRoom){
-//   let sheet = activeSpreadSheet.getActiveSheet();
-//   srow = sheet.getActiveRange().getRow();
-//   scolumn = sheet.getActiveRange().getColumn();
-  
-//   activeSpreadSheet.getRange(srow,scolumn-2).setValue(itemRoom);
-//   SpreadsheetApp.getActiveRange.setValue("");
-//   activeSpreadSheet.getRange(srow, scolumn);
-//   sheet.setActiveRange(sheet.getRange(srow+1, scolumn));
-//  }
-
 
 function getBOMList() {
   const ss = SpreadsheetApp.openById("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4"); 
@@ -248,13 +159,18 @@ function getBOMList() {
 }
 //end edit
 
+// function dialogBox(){
+//   var ui = SpreadsheetApp.getUi();
+//   var result = ui.prompt("Please input BOM Type");
+//   return result.getResponseText();
+// }
+
 function addBOMtoTemplate() {
   var ui = SpreadsheetApp.getUi();
   var result = ui.prompt("Please input BOM Type");
   var bomName = result.getResponseText();
- 
   //make sure BOM Type doesn't already exist
-  //var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
   var bomSheet = ss.getSheetByName("BOM");
   var bomSheetLastRow = bomSheet.getLastRow()+1;
   var bomSheetValue = bomSheet.getRange("A2:" + "ZZ" + bomSheetLastRow).getValues();
@@ -264,13 +180,13 @@ function addBOMtoTemplate() {
     var bomType = bomSheetValue[i][0];
     if (bomName===""){
       ohNoUserBadInput = false;
+      return;
     }
     else if (bomName === bomType ){
       ohNoUserBadInput = true;
     }else{
       ohNoUserBadInput=false;
     }
-
   }
   if (ohNoUserBadInput){
     ui.alert("BOM TYPE ALREADY EXISTS. Bye Felicia.");
@@ -290,6 +206,7 @@ function addBOMtoTemplate() {
       item += 2;
       qty+=2;
     }
+    return bomName;
   }
 }
 //end add
@@ -386,6 +303,19 @@ function insertItems(selectedRoomNameInput, selectedBomType) {
     });
   }
 
+  function obtainBOMListAddition(bomTypo){
+    var bomSheet = ss.getSheetByName("BOM");
+    var bomSheetLastRow = getFirstEmptyBOMRowWholeRow(bomSheet);
+    var bomSheetValue = bomSheet.getRange("A2:" + "BQ" + bomSheetLastRow).getValues();
+    for (var i =0; i < (bomSheetLastRow - 1); i++){
+      var bombi = bomSheetValue[i][0];
+      if(bomTypo === bombi){
+        return bombi;
+      }
+    }
+  }
+
+
 //added by SS
 /**
  * inserts an item, discription cost and name to the named spreadsheet
@@ -395,13 +325,14 @@ function insertItems(selectedRoomNameInput, selectedBomType) {
  * @param {String}  itemRoom:   cost of the item. inserted at the third column of the sheet.
  * @param {String}  name:    name of the sheet. to be obtained from the UI. case sensitive.
  */
-function sheetInsertion(item, desc, cost, name){
+function sheetInsertion(item, desc, cost, msrp, name){
   let mSheet = activeSpreadSheet.getSheetByName(name); 
   let inserto = getLastDataRow(mSheet)+1;
   try {
   mSheet.getRange("A"+inserto).setValue(item);
   mSheet.getRange("B"+inserto).setValue(desc);
   mSheet.getRange("C"+inserto).setValue(cost);
+  mSheet.getRange("D"+inserto).setValue(msrp);
   } catch (err){
     Logger.log('Failed with an error %s', + err.message)
   }
@@ -451,6 +382,26 @@ function vLookup(sheet, value, searchRange, grabit, place){
   } else {
       var foundValue = data.getRange(grabit+(index+2)).getValue();
       s.getRange(place).setValue(foundValue);
+  }
+}
+
+//the spreadsheet id is the id of the associated spreadsheetID, and the sheetname is the specific sheet 
+//of the spreadsheet. 
+//the queryColumnLetterStart is the A1 Notation of the cell you wish to start at searching
+//the queryColumnLetterEnd is the A1 Notation of the cell you wish to finish searching
+//the queryColumnLetterSearch is the A1 Notation of the column you wish to search in
+function querylanguageSearch(sheetName, queryColumnLetterStart, queryColumnLetterEnd, queryColumnLetterSearch, query)
+{
+  try{
+    myQuery = "SELECT * WHERE " + queryColumnLetterSearch + " = '" + query + "'";
+    //after the /d/ is where + sheetID +'/gviz can go
+    var qvizURL = 'https://docs.google.com/spreadsheets/d/1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4' + '/gviz/tq?tqx=out:json&headers=1&sheet=' + sheetName + '&range=' + queryColumnLetterStart + ":" + queryColumnLetterEnd + '&tq=' + encodeURIComponent(myQuery);
+
+    var ret = UrlFetchApp.fetch(qvizURL, {headers: {Authorization: 'Bearer ' + ScriptApp.getOAuthToken()}}).getContentText();
+    activeSheet.getRange("A1").setValue(JSON.parse(ret.replace("/*O_o*/", "").replace("google.visualization.Query.setResponse(", "").slice(0, -2)));
+    //return JSON.parse(ret.replace("/*O_o*/", "").replace("google.visualization.Query.setResponse(", "").slice(0, //-2));
+  }catch(err){
+    console.log('error: %s', err);
   }
 }
 
