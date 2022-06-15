@@ -1,104 +1,24 @@
 <!doctype html>
 <html lang="en">
+
+<head>
 <style>
 	<link rel="stylesheet"href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"crossorigin="anonymous">
 </style>
 
 <script>
-	function loadRoomTypes() {
-    google.script.run.withSuccessHandler(function(ar) 
-    {
-      var roomTypeSelect = document.getElementById("room-types");
-      roomTypeSelect.options.length = 0;
-      let option = document.createElement("option");
-      option.value = "";
-      option.text = "";
-      roomTypeSelect.appendChild(option);
-      
-      let option2 = document.createElement("option");
-      option2.value = "00";
-      option2.text = "Selected Text";
-      roomTypeSelect.appendChild(option2);  
-
-      ar.forEach(function(item, index) 
-      {    
-        let option = document.createElement("option");
-        option.value = item[1];
-        option.text = item[0];
-        roomTypeSelect.appendChild(option);    
-      });
-    
-    }).getRoomTypeList();
-  };
-
-  function loadItems() {
-    google.script.run.withSuccessHandler(function(ar) 
-    {
-      var itemSelect = document.getElementById("items");
-      console.log(ar);
-      
-      let option = document.createElement("option");
-      option.value = "";
-      option.text = "";
-      itemSelect.appendChild(option);
-      option.value = "00";
-      option.text = "Selected Items";
-      itemSelect.appendChild(option);
-    
-      ar.forEach(function(item, index) 
-      {    
-        let option = document.createElement("option");
-        option.value = item[1];
-        option.text = item[0];
-        itemSelect.appendChild(option);    
-      });
-    
-    }).getList();
-  };
-  
-  function submitData() {
-    //need to 
-    var roomNames = document.getElementById('room-name').value;
-
-    var selectedType = document.getElementById("room-types");
-    var selectedTypeText= selectedType.options[selectedType.selectedIndex].text;
-
-   // window.alert(selectedTypeText + " " + roomNames);
-
-    google.script.run.insertItems(roomNames,selectedTypeText);
-  }
-
   function submitAddBom() {
-
-  //  google.script.run.addBOMtoTemplate();
-  google.script.run.addBOMtoTemplate();
-  
-
+  google.script.run.joj();
   }
-
-
+  function boten(){
+    google.script.run.buton();
+  }
 </script>
 
-<head>
 </head>
-<h3>Room Name</br><small>Seperate multiple rooms with comma</small></h3>
-<textarea  type="text" class="form-control" id="room-name" rows="5" cols="30"> </textarea>
-<h3>BOM Type</h3>
-<select id="room-types" ></select>
-</br>
-<script>
-	loadRoomTypes();
-</script>
-</br>
-<button type="submit"  onclick="submitData()">Add Rooms</button>
-</br>
-</br>
-<hr width=”75%”>
-</br>
-<button type="submit"  onclick="submitAddBom()">Add Selected to BOM</button>
-</br>
-</br>
-<button type="submit"  onclick="loadRoomTypes()">Refresh BOM List</button>
+<h3>The Test</h3>
+<button type="submit"  onclick="submitAddBom()">test values bambi</button>
+<button type="submit"  onclick="boten()">set the row straight</button>
 </body>
 
 </html>
