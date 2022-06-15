@@ -1,280 +1,104 @@
 <!doctype html>
 <html lang="en">
+<style>
+	<link rel="stylesheet"href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"crossorigin="anonymous">
+</style>
 
-<head>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
-</head>
 <script>
-function addList() {
-      google.script.run
-        .withFailureHandler(onFailure)
-        .withSuccessHandler(addListValues)
-        .getItemList();
-        
-}
-
-function addItem(){
-  var itemToAdd = document.getElementById('selectedItemToPaste').value;
-  var itemQty = document.getElementById('itemQty').value;
-  var itemRoom = document.getElementById('itemRoom').value;
-  document.getElementById('selectedItemToPaste').focus();
-  //alert(itemToPaste);
-  google.script.run.addItems(itemToAdd,itemQty,itemRoom);
-
-}
-
-const activeSpreadSheet = SpreadsheetApp.getActiveSpreadsheet();
-const activeSheet = SpreadsheetApp.getActiveSheet();
-
-function getItemList() {
-    var sheet = activeSpreadSheet.getSheetByName("Item Import");
-    var data = sheet.getDataRange().getValues()
-    var array = [];
-    data.forEach(function(row){array.push([row[0],row[1]]); });
-   // Logger.log(array);
-    return array;
-}
-
-function addItems(selectedItemToPaste,itemQty,itemRoom){ 
-  let sheet = activeSpreadSheet.getActiveSheet();
-  srow = sheet.getActiveRange().getRow();
-  scolumn = sheet.getActiveRange().getColumn();
-  
-  //SpreadsheetApp.getUi().alert(srow + " " + scolumn );
-  activeSpreadSheet.getRange(srow,scolumn-2).setValue(itemRoom);
-  SpreadsheetApp.getActiveRange().setValue(selectedItemToPaste);
-  activeSpreadSheet.getRange(srow,scolumn+1).setValue(itemQty);
- // addForumlas();
-  sheet.setActiveRange(sheet.getRange(srow+1,scolumn));
-  //var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  //sheet.getRange(e.range.getRow(), col).setValue(selectedItemToPaste);
-
-}
-// window.addEventListener('load', function(){
-//     if (localStorage.pick) {
-//         var sel = document.querySelector('#room-types');
-//         sel.value = localStorage.pick;
-//     }
-// });
-
-
-function imp(){
-  google.script.run.doimp();
-}
-
-function impl(){
-  google.script.run.testingfd();
-}
-
-function removeItem(){
-  google.script.run.removeItems(itemQty,itemRoom);
-
-}
-//need to put option value as the item name only!!. then figure out how to paste just that to the sheet.
-
-function addListValues(values) {
-      var list = document.getElementById('dropdownList');
-      for (var i = 1; i < values.length; i++) 
-        var subtext = document.createElement("data-subtext");
-       subtext.value = values[i];  
-      for (var i = 0; i < values.length; i++) {
-        var option = document.createElement("option");
-        option.innerHTML = values[i];
-        option.value = values[i][0]; // Modified
-        list.appendChild(option, subtext); // Modified
-      }
-}
-
-function onFailure(err) {
-      alert('There was an error!' + err.message);
-    }
-
-  
-  function submitData() {
-    var roomNames = document.getElementById('room-name').value;
-    var selectedType = document.getElementById("room-types");
-    var selectedTypeText= selectedType.options[selectedType.selectedIndex].text;
-
-
-
-if (roomNames.length < 2 || selectedTypeText.length < 1){
-window.alert("Please make sure Room Name is entered and BOM Type is selected");
-return;
-}
-
-    google.script.run.insertItems(roomNames,selectedTypeText);
-  }
-
-//need to seperate the two purposes of addBOMtoTemplate(); the obtaining the name and verification and selected    elements addition
-    // var feed = google.script.run.addBOMtoTemplate();
-    // var select = document.getElementById("room-types");
-    // var c = document.createElement("option");
-    // c.text =feed;
-    // select.options.add(c,select.options.length);
-
-  function submitAddBom() {
-    google.script.run.withSuccessHandler(function(ar){
-    var select = document.getElementById("room-types");
-    var c = document.createElement("option");
-    c.text =ar;
-    select.options.add(c,select.options.length);
-    }).addBOMtoTemplate();
-  }
-
-  function loadBOMTypes() {
+	function loadRoomTypes() {
     google.script.run.withSuccessHandler(function(ar) 
-  {
-      var roomBOMSelect = document.getElementById("room-types");
-      roomBOMSelect.options.length = 0;
+    {
+      var roomTypeSelect = document.getElementById("room-types");
+      roomTypeSelect.options.length = 0;
       let option = document.createElement("option");
       option.value = "";
       option.text = "";
-      roomBOMSelect.appendChild(option);
+      roomTypeSelect.appendChild(option);
       
       let option2 = document.createElement("option");
       option2.value = "00";
       option2.text = "Selected Text";
-      roomBOMSelect.appendChild(option2);  
+      roomTypeSelect.appendChild(option2);  
 
       ar.forEach(function(item, index) 
       {    
         let option = document.createElement("option");
         option.value = item[1];
         option.text = item[0];
-        roomBOMSelect.appendChild(option);    
+        roomTypeSelect.appendChild(option);    
       });
     
-  }).getBOMList();
-};
+    }).getRoomTypeList();
+  };
 
-//added by SS
-  function launchR(){
-    google.script.run.runRealmItemAdd();
-  }
-
-  function testl(){
-    google.script.run.addRow();
-  }
-
-  function gobo(){
-    let sheetName = document.getElementById('ssheet').value;
-    let queryColumnLetterStart = document.getElementById('scell').value;
-    let queryColumnLetterEnd = document.getElementById('ssearch').value;
-    let queryColumnLetterSearch = document.getElementById('splace').value;
-    let query = document.getElementById('sgrab').value;
-    google.script.run.querylanguageSearch(sheetName, queryColumnLetterStart, queryColumnLetterEnd, queryColumnLetterSearch, query);
-    // google.script.run.vLookup(sauce, val, searx, nab, plaz);
-  }
-
-  function sql(){
-    google.script.run.getConnection();
-  }
+  function loadItems() {
+    google.script.run.withSuccessHandler(function(ar) 
+    {
+      var itemSelect = document.getElementById("items");
+      console.log(ar);
+      
+      let option = document.createElement("option");
+      option.value = "";
+      option.text = "";
+      itemSelect.appendChild(option);
+      option.value = "00";
+      option.text = "Selected Items";
+      itemSelect.appendChild(option);
+    
+      ar.forEach(function(item, index) 
+      {    
+        let option = document.createElement("option");
+        option.value = item[1];
+        option.text = item[0];
+        itemSelect.appendChild(option);    
+      });
+    
+    }).getList();
+  };
   
+  function submitData() {
+    //need to 
+    var roomNames = document.getElementById('room-name').value;
+
+    var selectedType = document.getElementById("room-types");
+    var selectedTypeText= selectedType.options[selectedType.selectedIndex].text;
+
+   // window.alert(selectedTypeText + " " + roomNames);
+
+    google.script.run.insertItems(roomNames,selectedTypeText);
+  }
+
+  function submitAddBom() {
+
+  //  google.script.run.addBOMtoTemplate();
+  google.script.run.addBOMtoTemplate();
+  
+
+  }
+
+
 </script>
 
-<!--//edited by SS-->
+<head>
 </head>
-<body onload="addList()"> 
-<ul class="list-group">
-<li class="list-group-item">
-  <div class="container mx-auto">
-    <div class="row">
-      <div class="col-9">
-        <h3>Room Name</h3>
-      </div>
-      <div class="col-9">
-        <a>Seperate multiple rooms with comma.</a>
-        </div>
-        <div style='clear:both;'></div>
-        <div class="col-12">
-          <textarea  type="text" class="form-control" id="room-name" rows="4" cols="50"> </textarea>
-        </div>
-    </div>
-  </div>
-  </li>
-
-<li class="list-group-item">
-
-  <div class="container mx-auto">
-    <div class="row">
-      <div class="col-9">
-        <h3>BOM Type</h3>
-       </div>
-       <div class="col">
-         <button type="button" class="btn btn-outline-primary" onclick="submitData()" style="margin-top:20px">Add to BOM</button>
-       <div class="col-9">
-        <select id="room-types" ></select>
-        <script>
-          loadBOMTypes();
-        </script>
-       </div>
-       </div>
-       <div class="col-9" style="margin-top:10px">
-        <button type="button" class="btn btn-outline-primary" onclick="submitAddBom()" style="margin-top:20px">Add new BOM type</button>
-        </div>
-      <div class="col-9" style="margin-top:10px">
-        <button type="button" class="btn btn-outline-primary" onclick="loadBOMTypes()" style="margin-top:20px">Refresh BOM List</button>
-      </div>
-    </div>
-    </div>
-</li>
-
-<li class="list-group-item">
-<div class="container mx-auto">
-  <div class="row">
-  <div class="col-10">
-    <h3>Add Items</h3>
-  </div>
-    <div class="col-9"style="margin-top:10px">
-    <label for="lRoomName"> Room Name:</label><input type="text" id="itemRoom" name="itemRoom"> </br>
-    <label for="lRoomName" style="margin-top:20px"> Item Quantity:</label><input type="text" id="itemQty" name="itemQty"> </br>
-    </div>
-    <div class="col-9"style="margin-top:10px">
-        <input list="dropdownList" id="selectedItemToPaste"name="list" placeholder="Choose Item"  onchange="addItem()" >  
-          <datalist id="dropdownList">      
-          </datalist>
-          <div class="col-9"style="margin-top:20px">
-          <button type="button" class="btn btn-outline-primary" onclick="addItem()">Quick Add</button>
-          </div>
-          <div class="col-9"style="margin-top:20px">
-          <button type="button" class="btn btn-outline-primary" onclick="launchR()">Add New Item</button>
-          </div>
-    </div>
-  </div>
-</div>
-</li>
-<li class="list-group-item">
-  <div class="container">
-    <div class="row">
-      <div class="col-10">
-        <h3>Sheet Operations</h3>
-      </div>
-    </div>
-       <div class="row">
-          <div class="col-6">
-            <button type="button" class="btn btn-outline-primary" onclick="imp()">import sheets</button>
-          </div>
-          <div class="col-6">
-            <button type="button" class="btn btn-outline-primary" onclick="testl()">add rows with formulas</button>
-          </div>
-        </div>
-     <div class="row">
-          <div class="col-9">
-              <label for="lRoo"> sheet to search from:</label><input type="text" id="ssheet" name="ssheet"> </br>
-              <label for="lRoo"> queryColumnLetterStart</label><input type="text" id="scell" name="scell"> </br>
-              <label for="lRoo"> queryColumnLetterEnd</label><input type="text" id="ssearch" name="ssearch"> </br>
-              <label for="lRoo"> queryColumnLetterSearch</label><input type="text" id="splace" name="splace"> </br>
-              <label for="lRoo"> query</label><input type="text" id="sgrab" name="sgrab"> </br>
-              <button type="button" class="btn btn-outline-primary" onclick="gobo()">Vlookup</button>
-            </div>
-          </div>
-    </div>
-</li>
-<li>
-  <textarea></textarea>
-  <button type="button" class="btn btn-outline-primary" onclick="sql()">SQL connect</button>
-  </li>
-</ul>
+<h3>Room Name</br><small>Seperate multiple rooms with comma</small></h3>
+<textarea  type="text" class="form-control" id="room-name" rows="5" cols="30"> </textarea>
+<h3>BOM Type</h3>
+<select id="room-types" ></select>
+</br>
+<script>
+	loadRoomTypes();
+</script>
+</br>
+<button type="submit"  onclick="submitData()">Add Rooms</button>
+</br>
+</br>
+<hr width=”75%”>
+</br>
+<button type="submit"  onclick="submitAddBom()">Add Selected to BOM</button>
+</br>
+</br>
+<button type="submit"  onclick="loadRoomTypes()">Refresh BOM List</button>
 </body>
 
 </html>
