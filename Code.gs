@@ -24,13 +24,14 @@ function joj(){
     indices.push(index);
     index = dataList.indexOf("", index + 1);
   }
-  indices.forEach(idx=>{
-    let g = 2;
-    if(range1[idx][0] != range2[idx][0]){
-      ss.getRange("H"+g).setValue(range1[idx][0]);
-      g += 1;
-    }
-  });
+  return indices;
+//   indices.forEach(idx=>{
+//     let g = 2;
+//     if(range1[idx][0] != range2[idx][0]){
+//       ss.getRange("H"+g).setValue(range1[idx][0]);
+//       g += 1;
+//     }
+//   });
 }
 
 function onEdit(event) {
