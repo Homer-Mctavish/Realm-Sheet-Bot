@@ -12,16 +12,17 @@
   }
 function ger(){
   run =google.script.run.withSuccessHandler(function(ar){
-    ar.forEach(idx=>{
-      document.getElementById('texto').value=idx;
-    })
+    document.getElementById('texto').value=ar.join("\n")
+    // ar.forEach(idx=>{
+    //   document.getElementById('texto').value=idx;
+    // })
   }).joj();
 };
 </script>
 
 </head>
 <h3>The Test</h3>
-<button type="submit"  onclick="ger()">find items with missing quantities:</button>
+<button type="submit"  onclick="ger()">find items in internal sheet with missing quantities:</button>
 <button type="submit"  onclick="boten()">alphanumericalize rows of internal sheet:</button>
 <textarea  type="text" class="form-control" id="texto" rows="4" cols="50"> </textarea>
 </body>
