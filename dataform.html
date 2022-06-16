@@ -7,26 +7,23 @@
 </style>
 
 <script>
-  function submitAddBom() {
-  google.script.run.joj();
-  }
   function boten(){
     google.script.run.buton();
   }
 function ger(){
-	var indices = google.script.run.joj();
-	document.getElementById('textarea').value=indices;
-}
+  run =google.script.run.withSuccessHandler(function(ar){
+    ar.forEach(idx=>{
+      document.getElementById('texto').value=idx;
+    })
+  }).joj();
+};
 </script>
 
 </head>
 <h3>The Test</h3>
-<button type="submit"  onclick="submitAddBom()">test values bambi</button>
-<button type="submit"  onclick="boten()">set the row straight</button>
-<textarea  type="text" class="form-control" id="textarea" rows="4" cols="50"> </textarea>
-	<script>
-		ger()
-		</script>
+<button type="submit"  onclick="ger()">find items with missing quantities:</button>
+<button type="submit"  onclick="boten()">alphanumericalize rows of internal sheet:</button>
+<textarea  type="text" class="form-control" id="texto" rows="4" cols="50"> </textarea>
 </body>
 
 </html>
