@@ -12,11 +12,83 @@ function onOpen() {
     .addToUi();
   var ss = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Prewire Order");
   var tt = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Hardware Order");
+  var uu = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Add Ons");
   ss.hideColumns(1);
   ss.hideColumns(2);
+  ss.hideColumns(12);
 
   tt.hideColumns(1);
   tt.hideColumns(2);
+  tt.hideColumns(12);
+  
+  uu.hideColumns(1);
+  uu.hideColumns(2);
+  uu.hideColumns(12);
+}
+
+function checkcheckbox(){
+  var ss = SpreadsheetApp.getActiveSheet(), gg;
+  // if(range.getValues()[0].indexOf("Order Request")!=-1){
+  //   var eF = getLetter((range.getValues()[0].indexOf("Order Request")+1));
+    // gg=ss.getRange(eF+"1"+":"+eF);
+  gg=ss.getRange("F2:F");
+  var ge = gg.map((c,i)=>c===true? `F${i+1}`:'').filter(c=>c!='').join(', ');
+  for(let i =0;i<ge.length;i++){
+    var number = ge[i].replace(/\D/g,'');
+    if(ss.getRange("L"+number).getValue()===""){
+      //get trxio sheet, check if the thing is in it
+      var trix = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("TRXIO")
+      if(searchTrxio(trix, "D2:D", ss.getRange("D"+number).getValue())!==-1){
+        var newOne = SpreadsheetApp.getActiveSpreadsheet();
+        let datto = new Date();
+        let templateSheet = ss.getSheetByName("Order List");
+        newOne.insertSheet('Order List of'+datto, 1, {template: templateSheet});
+        let trix = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("TRXIO")
+        let refNo = (searchTrxio(trix, "D2:D", ss.getRange("D"+number).getValue()))+2;
+        let loc = trix.getRange("C"+refNo).getValue();
+        let qty = trix.getRange("E"+refNo).getValue();
+        let item = trix.getRange("F"+refNo).getValue();
+
+        let ware = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Order List")
+        newOne.getRange("A"+getLastDataRow(ware)).setValue(loc);
+        newOne.getRange("A"+getLastDataRow(ware)).setValue(qty);
+        newOne.getRange("A"+getLastDataRow(ware)).setValue(item);
+        ss.getRange("L"+number).setValue(1);
+      }
+    }
+  }
+}
+
+function testoo(){
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var gg = ss.getRange("F2:F").getValues().flat();
+  var ge = gg.map((c,i)=>c===true? `F${i+1}`:'').filter(c=>c!='');
+  for(let i= 0; i<ge.length;i++){
+    let z = 2;
+    ss.getRange("M"+z).setValue(ge[i]);
+    z+=1;
+  }
+}
+
+//range = "D2:D"
+//ss1 
+function searchTrxio(ss, atrange, svalue){
+  var range1 = ss.getRange(atrange).getValues();
+  var dataList = range1.join("ღ").split("ღ");
+  var index = dataList.indexOf(svalue);
+  if(index !==-1){
+    return index;
+  }
+}
+
+function getLastDataRow(sheet) {
+  var lastRow = sheet.getLastRow();
+  var range = sheet.getRange("A" + lastRow);
+  if (range.getValue() !== "") {
+    return lastRow;
+  } else {
+    return range.getNextDataCell(SpreadsheetApp.Direction.UP).getRow();
+  }              
 }
 
 function joj(){

@@ -18,12 +18,22 @@ function ger(){
     // })
   }).joj();
 };
+
+function checkers(){
+  google.script.run.checkcheckbox();
+}
+
+function tost(){
+  google.script.run.testoo();
+}
 </script>
 
 </head>
-<h3>The Test</h3>
+<h3>Data Validation for Internal Sheet</h3>
 <button type="submit"  onclick="ger()">find items in internal sheet with missing quantities:</button>
-<button type="submit"  onclick="boten()">alphanumericalize rows of internal sheet:</button>
+<button type="submit"  onclick="boten()">sort rows of internal sheet alphanumerically:</button>
+<!-- <button type="submit"  onclick="checkers()">find the checked items and import to warehouse sheet</button> -->
+<!-- <button type="submit"  onclick="tost()">does the map work</button> -->
 <textarea  type="text" class="form-control" id="texto" rows="4" cols="50"> </textarea>
 </body>
 
