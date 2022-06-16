@@ -13,12 +13,20 @@
   function boten(){
     google.script.run.buton();
   }
+function ger(){
+	var indices = google.script.run.joj();
+	document.getElementById('textarea').value=indices;
+}
 </script>
 
 </head>
 <h3>The Test</h3>
 <button type="submit"  onclick="submitAddBom()">test values bambi</button>
 <button type="submit"  onclick="boten()">set the row straight</button>
+<textarea  type="text" class="form-control" id="textarea" rows="4" cols="50"> </textarea>
+	<script>
+		ger()
+		</script>
 </body>
 
 </html>
