@@ -24,7 +24,12 @@ function checkers(){
 }
 
 function tost(){
-  google.script.run.testoo();
+    run =google.script.run.withSuccessHandler(function(ar){
+    // google.script.run.checkcheckbox();
+    ar.forEach(g=>{
+      document.getElementById('texto').value=ar;
+    })
+  }).testoo();
 }
 </script>
 
@@ -33,7 +38,7 @@ function tost(){
 <button type="submit"  onclick="ger()">find items in internal sheet with missing quantities:</button>
 <button type="submit"  onclick="boten()">sort rows of internal sheet alphanumerically:</button>
 <!-- <button type="submit"  onclick="checkers()">find the checked items and import to warehouse sheet</button> -->
-<!-- <button type="submit"  onclick="tost()">does the map work</button> -->
+<button type="submit"  onclick="tost()">does the map work</button>
 <textarea  type="text" class="form-control" id="texto" rows="4" cols="50"> </textarea>
 </body>
 
