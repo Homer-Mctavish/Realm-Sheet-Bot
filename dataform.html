@@ -31,12 +31,19 @@ function tost(){
     })
   }).testoo();
 }
+
+function bob(){
+      run =google.script.run.withSuccessHandler(function(ar){
+      document.getElementById('texto').value=ar;
+  }).testRange();
+}
 </script>
 
 </head>
 <h3>Data Validation for Internal Sheet</h3>
 <button type="submit"  onclick="ger()">find items in internal sheet with missing quantities:</button>
 <button type="submit"  onclick="boten()">sort rows of internal sheet alphanumerically:</button>
+<button type="submit"  onclick="bob()">querylanguage search test:</button> 
 <!-- <button type="submit"  onclick="checkers()">find the checked items and import to warehouse sheet</button> -->
 <button type="submit"  onclick="tost()">does the map work</button>
 <textarea  type="text" class="form-control" id="texto" rows="4" cols="50"> </textarea>
