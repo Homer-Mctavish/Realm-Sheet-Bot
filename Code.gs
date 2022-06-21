@@ -110,7 +110,7 @@ function itDoesIt(){
   }
 }
 
-function testRange(){
+function wee(){
   var joj=SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Order List");
   var items = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'Hardware order', 'SELECT D WHERE F = TRUE AND I = FALSE');
   var names = items.map(function(item) {
@@ -129,6 +129,25 @@ function testRange(){
     i=i+1;
   })
   return names;
+}
+
+function testRange(){
+  var joj=SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Hardware order");
+  var sele = "SELECT I WHERE F = TRUE"
+  var data = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), "Hardware order", sele);
+  var vas = joj.getRange("I2:I").getValues();
+  var bas = joj.getRange("F2:F").getValues();
+  var bb = [];
+  var dataList1 = vas.join("ღ").split("ღ");
+  var dataList2 = bas.join("ღ").split("ღ");
+  for(let i = 0;i<vas.length;i++){
+    var indext = dataList1.indexOf(true);
+    var indexf = dataList2.indexOf(false);
+    if(indext===indexf){
+      bb.push(indexf);
+    }
+  }
+  return bb;
 }
 
 function setReservedQuantity(){
