@@ -7,9 +7,6 @@
 </style>
 
 <script>
-  function boten(){
-    google.script.run.buton();
-  }
 function ger(){
   run =google.script.run.withSuccessHandler(function(ar){
     document.getElementById('texto').value=ar.join("\n")
@@ -18,20 +15,13 @@ function ger(){
     // })
   }).joj();
 };
+function reserve(){
+  google.script.run.setReservedQuantity();
+}
 
 function checkers(){
   google.script.run.checkmate();
 }
-
-function tost(){
-    run =google.script.run.withSuccessHandler(function(ar){
-    // google.script.run.checkcheckbox();
-    ar.forEach(g=>{
-      document.getElementById('texto').value=ar;
-    })
-  }).testoo();
-}
-
 function bob(){
   run =google.script.run.withSuccessHandler(function(ar){
       document.getElementById('texto').value=ar;
@@ -44,10 +34,10 @@ function bob(){
 </head>
 <h3>Data Validation for Internal Sheet</h3>
 <button type="submit"  onclick="ger()">find items in internal sheet with missing quantities:</button>
-<button type="submit"  onclick="boten()">sort rows of internal sheet alphanumerically:</button>
-<button type="submit"  onclick="bob()">querylanguage search test:</button> 
-<!-- <button type="submit"  onclick="checkers()">find the checked items and import to warehouse sheet</button> -->
-<button type="submit"  onclick="tost()">does the map work</button>
+<button type="submit"  onclick="reserve()">set reserved quantity values:</button> 
+<br>
+<button type="submit"  onclick="checkers()">find the checked items and import to warehouse sheet</button>
+<button type="submit"  onclick="bob()">test</button>
 <textarea  type="text" class="form-control" id="texto" rows="4" cols="50"> </textarea>
 </body>
 

@@ -27,43 +27,6 @@ function onOpen() {
     uu.hideColumns(2);
     uu.hideColumns(12);
 }
-//   // var ge = gg.map((c,i)=>c==true? `F${i+2}`:'').filter(c=>c!='');
-// function checkcheckbox(){
-//   var ss = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet(), gg;
-//   gg=ss.getRange("F2:F").getValues().flat();
-//   var ge = gg.map((c,i)=>{if(c===true){return i+2;}else{return '';}}).filter(c=>c!='');
-//   if(ge.length!==0){
-//     var newOne = SpreadsheetApp.getActiveSpreadsheet();
-//     let datto = new Date();
-//     let templateSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Order List");
-//     newOne.insertSheet('Order List of '+datto, 10, {template: templateSheet});
-//     SpreadsheetApp.getActiveSpreadsheet().setActiveSheet(newOne.getSheetByName("Hardware order"));
-//     ge.forEach(number=>{
-//       if(ss.getRange("L"+number).getValue()===""){
-//         var trix = newOne.getSheetByName("TRXIO");
-//         var gero =  searchTrxio(trix, "E2:E", ss.getRange("D"+number).getValue());
-//         if(gero!==-1){
-//           let refNo =gero+2;
-//           let loc = trix.getRange("C"+refNo).getValue();
-//           let qty = trix.getRange("O"+refNo).getValue();
-//           let item = trix.getRange("E"+refNo).getValue();
-
-//           newOne.getSheetByName('Order List of '+datto).getRange("A"+getLastDataRow(newOne)).setValue(loc);
-//           newOne.getSheetByName('Order List of '+datto).getRange("B"+getLastDataRow(newOne)).setValue(qty);
-//           newOne.getSheetByName('Order List of '+datto).getRange("C"+getLastDataRow(newOne)).setValue(item);
-//           ss.getRange("L"+number).setValue(1);
-//         }else{
-//           return;
-//         }
-//       }else{
-//         return;
-//       }
-//     });
-//   }else{
-//     return;
-//   }
-// }
-///\(.*?\)/g
 
 Array.prototype.find = function(regex) {
   const arr = this;
@@ -99,20 +62,22 @@ function queryASpreadsheet(sheetId, sheetName, queryString) {
 }
 
 function checkmate(){
-  var ss = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet(), trix = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("TRXIO");
-  var gamer = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'Hardware order', 'SELECT D WHERE F = TRUE AND I = FALSE');
+  var orderisGiven = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Order List'), items = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'Hardware order', 'SELECT D WHERE F = TRUE AND I = FALSE'), gamer = items.map(function(item) {
+  return item.toString();
+  });
   if(gamer.length !=0){
+  var i = orderisGiven.getLastRow()+1;
   gamer.forEach(name=>{
-    var f = "'"+name+"'";
-    var q = "SELECT E WHERE J MATCHES "+f;
-    var qu = "SELECT O WHERE J MATCHES"+f;
-    var quo = "SELECT J WHERE J MATCHES"+f;
+    var q = "SELECT E WHERE J MATCHES "+name;
+    var qu = "SELECT T WHERE J MATCHES "+name;
+    var quo = "SELECT J WHERE J MATCHES "+name;
     var gamero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', q);
     var camero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', qu);
     var jamero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', quo);
-    SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Order list').getRange("A2").setValue(jamero[0])
-    SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Order list').getRange("B2").setValue(camero[0])
-    SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Order list').getRange("C2").setValue(gamero[0])
+    orderisGiven.getRange("A"+i).setValue(jamero[0])
+    orderisGiven.getRange("B"+i).setValue(camero[0])
+    orderisGiven.getRange("C"+i).setValue(gamero[0])
+    i=i+1
   })
   }else{
     return "idiot";
@@ -124,17 +89,6 @@ function obtainListofCheckedwithoutStock(){
   var id = '1-YBuCQ7bRuJbE3eiP8RmkfXYSaGZqQHhowRsBEIb-5o';
   var qu = 'SELECT D WHERE F = TRUE AND I = FALSE';
   var data = queryASpreadsheet(id, ss, qu);
-  return data;
-}
-
-function simplystrsing(){
-  var ss = 'TRXIO';
-  var id = '1-YBuCQ7bRuJbE3eiP8RmkfXYSaGZqQHhowRsBEIb-5o';
-  var name = 'Middle Atlantic UFAF-1';
-  var f = "'"+name+"'";
-  var qu = "SELECT K WHERE J MATCHES "+f;
-  var data = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO',qu);
-  //= queryASpreadsheet(id, ss, qu);
   return data;
 }
 
@@ -156,6 +110,27 @@ function itDoesIt(){
   }
 }
 
+function testRange(){
+  var joj=SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Order List");
+  var items = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'Hardware order', 'SELECT D WHERE F = TRUE AND I = FALSE');
+  var names = items.map(function(item) {
+  return item.toString();
+  });
+  var i =joj.getLastRow()+1;
+  names.forEach(name=>{
+    var q = "SELECT E WHERE J MATCHES "+name;
+    var qu = "SELECT T WHERE J MATCHES "+name;
+    joj.getFilter()
+    let gamero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', q)
+    let camero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', qu)
+    joj.getRange("E"+i).setValue(gamero[0]);
+    joj.getRange("F"+i).setValue(camero[0]);
+    joj.getRange("G"+i).setValue(name);
+    i=i+1;
+  })
+  return names;
+}
+
 function setReservedQuantity(){
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var trx = ss.getSheetByName("TRXIO");
@@ -175,7 +150,7 @@ function setReservedQuantity(){
   var data = valus.find(/#/).map(x=>x+2);
   var i = 0;
   data.forEach(index=>{
-    trx.getRange("T"+index).setValue(ger[i]);
+    trx.getRange("S"+index).setValue(ger[i]);
     i=i+1;
   })
 }
