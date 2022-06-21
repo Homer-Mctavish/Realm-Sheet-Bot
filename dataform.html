@@ -33,11 +33,9 @@ function tost(){
 }
 
 function bob(){
-      run =google.script.run.withSuccessHandler(function(ar){
-        // ar.forEach(function (elemente){
-          document.getElementById('texto').value=ar;
+  run =google.script.run.withSuccessHandler(function(ar){
+      document.getElementById('texto').value=ar;
 
-        // })
   }).testRange();
   // google.script.run.testRange();
 }

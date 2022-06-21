@@ -64,26 +64,12 @@ function onOpen() {
 //   }
 // }
 ///\(.*?\)/g
-function checkmate(){
-  var ss = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet(), trix = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("TRXIO");
-  var gamer = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'Hardware order', 'SELECT D WHERE F = TRUE AND I = FALSE');
-  if(gamer.length !=0){
-  gamer.forEach(name=>{
-    var f = "'"+name+"'";
-    var q = "SELECT E WHERE J MATCHES "+f;
-    var qu = "SELECT O WHERE J MATCHES"+f;
-    var quo = "SELECT J WHERE J MATCHES"+f;
-    var gamero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', q);
-    var camero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', qu);
-    var jamero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', quo);
-    SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Order list').getRange("A2").setValue(jamero[0])
-    SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Order list').getRange("B2").setValue(camero[0])
-    SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Order list').getRange("C2").setValue(gamero[0])
-  })
-  }else{
-    return "idiot";
-  }
-}
+
+Array.prototype.find = function(regex) {
+  const arr = this;
+  const matches = arr.filter( function(e) { return regex.test(e); } );
+  return matches.map(function(e) { return arr.indexOf(e); } );
+};
 
 const deepGet = (obj, keys) =>
   keys.reduce(
@@ -112,19 +98,26 @@ function queryASpreadsheet(sheetId, sheetName, queryString) {
   return arr;
 }
 
-//range = "D2:D"
-//ss1 
-function searchTrxio(ss, atrange, svalue){
-  var range1 = ss.getRange(atrange).getValues();
-  var dataList = range1.join("ღ").split("ღ");
-  var index = dataList.indexOf(svalue);
-  if(index !==-1){
-    return index;
+function checkmate(){
+  var ss = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet(), trix = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("TRXIO");
+  var gamer = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'Hardware order', 'SELECT D WHERE F = TRUE AND I = FALSE');
+  if(gamer.length !=0){
+  gamer.forEach(name=>{
+    var f = "'"+name+"'";
+    var q = "SELECT E WHERE J MATCHES "+f;
+    var qu = "SELECT O WHERE J MATCHES"+f;
+    var quo = "SELECT J WHERE J MATCHES"+f;
+    var gamero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', q);
+    var camero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', qu);
+    var jamero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', quo);
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Order list').getRange("A2").setValue(jamero[0])
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Order list').getRange("B2").setValue(camero[0])
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Order list').getRange("C2").setValue(gamero[0])
+  })
   }else{
-    return -1;
+    return "idiot";
   }
 }
-
 
 function obtainListofCheckedwithoutStock(){
   var ss = 'Hardware order';
@@ -146,11 +139,7 @@ function simplystrsing(){
 }
 
 function itDoesIt(){
-  // var ss = 'TRXIO';
-  // var id = '1-YBuCQ7bRuJbE3eiP8RmkfXYSaGZqQHhowRsBEIb-5o';
   var name = 'Middle Atlantic UFAF-1';
-  // var qu = "SELECT K WHERE J MATCHES "+f;
-  // var data = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO',qu);
   var f = "'"+name+"'";
   var q = "SELECT E WHERE J MATCHES "+f;
   var qu = "SELECT O WHERE J MATCHES"+f;
@@ -164,14 +153,12 @@ function itDoesIt(){
   orderl.getRange("A2").setValue(jamero[0])
   orderl.getRange("B2").setValue(camero[0])
   orderl.getRange("C2").setValue(gamero[0])
-  // return gamer;
   }
 }
 
-function testRange(){
-  var ss = SpreadsheetApp.getActiveSpreadsheet()
-  var regexs = '(%'
-  var serip = "'"+regexs+"'";
+function setReservedQuantity(){
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var trx = ss.getSheetByName("TRXIO");
   var quo = "SELECT R WHERE R LIKE '#%'";
   var namer = queryASpreadsheet(ss.getId(), 'TRXIO', quo);
   var ger = [];
@@ -184,17 +171,39 @@ function testRange(){
       })
       ger.push(totalResserveQty);
   })
-  // return ger
-  man = ss.getSheetByName("TRXIO").getRange("R2:R").getValues();
-  for(var i = 0;i<man.length;i++){
-    for(var j = 0; j<man[i].length;j++){
-      if(man[i][j]!=""){
-        m
-      }
+  var valus = trx.getRange("R2:R").getValues();
+  var data = valus.find(/#/).map(x=>x+2);
+  var i = 0;
+  data.forEach(index=>{
+    trx.getRange("T"+index).setValue(ger[i]);
+    i=i+1;
+  })
+}
+
+
+//list is the getvalues of the colum, item is whatever you're looking for and column is where your wanting to put it
+
+function binarySearch(list, item,column) {
+    var min = 0;
+    var max = list.length - 1;
+    var guess;
+    var column = column || 0
+    while (min <= max) {
+        guess = Math.floor((min + max) / 2);
+
+        if (list[guess][column] === item) {
+            return guess;
+        }
+        else {
+            if (list[guess][column] < item) {
+                min = guess + 1;
+            }
+            else {
+                max = guess - 1;
+            }
+        }
     }
-  }
-  // ss.getSheetByName("TRXIO").getRange("T2:T").setValues(man)
-  // return man;
+    return -1;
 }
 
 function getLastDataRow(sheet) {
