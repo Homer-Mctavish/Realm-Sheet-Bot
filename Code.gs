@@ -4,7 +4,7 @@ function showSidebar() {
   SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
     .showSidebar(html);
 }
-
+//in on open set the value of the stock checklist checkmarks to false so as to ensure each session has stock refreshed.
 function onOpen() {
   SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
     .createMenu('Realm Custom Scripts')
@@ -61,31 +61,74 @@ function queryASpreadsheet(sheetId, sheetName, queryString) {
   return arr;
 }
 
+//keep track of items with zero quantyity, if they are checked and passed, notify the user that certain items they attempted to add have not been added due to lack of available quantity
+// function checkmate(){
+//   var orderisGiven = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Order List'), activeSheetName=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getSheetName(),
+//   items = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), activeSheetName, 'SELECT D WHERE F = TRUE AND I = FALSE'), gamer = items.map(function(item) {
+//   return item.toString();
+//   });
+//   if(gamer.length !=0){
+//   var i = orderisGiven.getLastRow()+1;
+//   gamer.forEach(name=>{
+//     var q = "SELECT E WHERE J MATCHES "+name;
+//     var qu = "SELECT T WHERE J MATCHES "+name;
+//     var quo = "SELECT J WHERE J MATCHES "+name;
+//     var gamero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', q);
+//     var camero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', qu);
+//     var jamero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', quo);
+//     if(Number(camero[0])>0){
+//       orderisGiven.getRange("A"+i).setValue(jamero[0])
+//       orderisGiven.getRange("B"+i).setValue(camero[0])
+//       orderisGiven.getRange("C"+i).setValue(gamero[0])
+//       i=i+1 
+//     }else{
+//       return;
+//     }
+//   });
+//   const checkOff = stockChecklist(activeSheetName, "Order List", "D2:D", "A2:A");
+//   checkOff.forEach(x=>{
+//     SpreadsheetApp.getActiveSpreadsheet().getSheetByName(activeSheetName).getRange("I"+x).setValue(true)
+//   })
+//   }else{
+//     return "idiot";
+//   }
+// }
+
 function checkmate(){
-  var orderisGiven = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Order List'), items = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'Hardware order', 'SELECT D WHERE F = TRUE AND I = FALSE'), gamer = items.map(function(item) {
+  var activeSheetName=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getSheetName(), ss=SpreadsheetApp.getActiveSpreadsheet(),
+  items = queryASpreadsheet(ss.getId(), activeSheetName, 'SELECT D WHERE F = TRUE AND I = FALSE'), gamer = items.map(function(item) {
   return item.toString();
   });
   if(gamer.length !=0){
-  var i = orderisGiven.getLastRow()+1;
-  gamer.forEach(name=>{
-    var q = "SELECT E WHERE J MATCHES "+name;
-    var qu = "SELECT T WHERE J MATCHES "+name;
-    var quo = "SELECT J WHERE J MATCHES "+name;
-    var gamero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', q);
-    var camero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', qu);
-    var jamero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', quo);
-    orderisGiven.getRange("A"+i).setValue(jamero[0])
-    orderisGiven.getRange("B"+i).setValue(camero[0])
-    orderisGiven.getRange("C"+i).setValue(gamero[0])
-    i=i+1
+    var templateSheet = ss.getSheetByName('Order List'), orderisGiven=ss.insertSheet(1, {template:templateSheet}), orderSheetName = orderisGiven.getName();
+    var i = orderisGiven.getLastRow()+1;
+    gamer.forEach(name=>{
+      var q = "SELECT E WHERE J MATCHES "+name;
+      var qu = "SELECT T WHERE J MATCHES "+name;
+      var quo = "SELECT J WHERE J MATCHES "+name;
+      var gamero = queryASpreadsheet(ss.getId(), 'TRXIO', q);
+      var camero = queryASpreadsheet(ss.getId(), 'TRXIO', qu);
+      var jamero = queryASpreadsheet(ss.getId(), 'TRXIO', quo);
+      if(Number(camero[0])>0){
+        orderisGiven.getRange("A"+i).setValue(jamero[0])
+        orderisGiven.getRange("B"+i).setValue(camero[0])
+        orderisGiven.getRange("C"+i).setValue(gamero[0])
+        i=i+1 
+      }else{
+        return;
+      }
+  });
+  const checkOff = stockChecklist(activeSheetName, orderSheetName, "D2:D", "A2:A");
+  checkOff.forEach(x=>{
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName(activeSheetName).getRange("I"+x).setValue(true)
   })
   }else{
-    return "idiot";
+    //the items you are attempting to add to an order sheet have already been added previously.
+    SpreadsheetApp.getUi().alert('Nothing added to new Order Sheet. either you have added these items to a prior sheet or the Trxio sheet is misnamed/not formatted correctly.');
   }
 }
 
-function obtainListofCheckedwithoutStock(){
-  var ss = 'Hardware order';
+function obtainListofCheckedwithoutStock(ss){
   var id = '1-YBuCQ7bRuJbE3eiP8RmkfXYSaGZqQHhowRsBEIb-5o';
   var qu = 'SELECT D WHERE F = TRUE AND I = FALSE';
   var data = queryASpreadsheet(id, ss, qu);
@@ -110,6 +153,14 @@ function itDoesIt(){
   }
 }
 
+function uncheckit(){
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var goj = ss.getSheetByName("Hardware order").getRange("F2:F")
+  var gem = ss.getSheetByName("Hardware order").getRange("D2:D")
+  var geb = ss.getSheetByName("Order List").getRang("A2:A")
+
+}
+
 function wee(){
   var joj=SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Order List");
   var items = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'Hardware order', 'SELECT D WHERE F = TRUE AND I = FALSE');
@@ -131,23 +182,66 @@ function wee(){
   return names;
 }
 
-function testRange(){
-  var joj=SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Hardware order");
-  var sele = "SELECT I WHERE F = TRUE"
-  var data = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), "Hardware order", sele);
-  var vas = joj.getRange("I2:I").getValues();
-  var bas = joj.getRange("F2:F").getValues();
-  var bb = [];
-  var dataList1 = vas.join("ღ").split("ღ");
-  var dataList2 = bas.join("ღ").split("ღ");
-  for(let i = 0;i<vas.length;i++){
-    var indext = dataList1.indexOf(true);
-    var indexf = dataList2.indexOf(false);
-    if(indext===indexf){
-      bb.push(indexf);
+// function stockChecklist(sheetname, requestRange, stockRange){
+//   joj = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetname)
+//   var arbys = joj.getRange(requestRange).getValues();
+//   var bob = joj.getRange(stockRange).getValues();
+//   var bar = arbys.join("ღ").split("ღ").flat();
+//   var lop = bob.join("ღ").split("ღ").flat();  
+//   var indices = [];
+//   var bindices = [];
+//   const hop = bar.filter(function(yourArray, index) {
+//  if(yourArray === "true"){
+//    indices.push(index+2)
+//  }
+// });
+//   const nop = lop.filter(function(yourArray, index) {
+//  if(yourArray === "false"){
+//    bindices.push(index+2)
+//  }
+// });
+//   const filteredArray = indices.filter(value =>bindices.includes(value));
+//   return filteredArray;
+// }
+
+function stockChecklist(checksheetname, ordersheetname, requestRange, stockRange){
+  var joj = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(checksheetname);
+  var noj = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(ordersheetname);
+  var egg = joj.getRange(requestRange).getValues();
+  var neg = noj.getRange(stockRange).getValues();
+  var gmp = egg.join("ღ").split("ღ").flat();
+  var mpo = neg.join("ღ").split("ღ").flat();
+  const g = [...new Set(gmp)];
+  const k = [...new Set(mpo)];
+  var lindices = [];  
+  const gerb = g.filter(function(thempo, index){
+    if(k.includes(thempo)){
+      lindices.push(index+1);
     }
-  }
-  return bb;
+  });
+  return lindices;
+}
+
+  // const filteredArray = indices.filter(value =>bindices.includes(value));
+  // filteredArray.forEach(x=>{
+  //   SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Hardware order").getRange("I"+x).setValue(true)
+  // })
+function testRange(){
+  var joj = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Hardware order");
+  var noj = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Order List");
+  var egg = joj.getRange("D2:D").getValues();
+  var neg = noj.getRange("A2:A").getValues();
+  var gmp = egg.join("ღ").split("ღ").flat();
+  var mpo = neg.join("ღ").split("ღ").flat();
+  const g = [...new Set(gmp)];
+  const k = [...new Set(mpo)];
+  var lindices = [];  
+  const gerb = g.filter(function(thempo, index){
+    if(k.includes(thempo)){
+      lindices.push(index);
+    }
+  });
+  return lindices;
 }
 
 function setReservedQuantity(){
