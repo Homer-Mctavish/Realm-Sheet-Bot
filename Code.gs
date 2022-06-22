@@ -61,15 +61,13 @@ function queryASpreadsheet(sheetId, sheetName, queryString) {
   return arr;
 }
 
-
 function checkmate(){
   const ss=SpreadsheetApp.getActiveSpreadsheet(), activeSheetName=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getSheetName();
   items = queryASpreadsheet(ss.getId(), activeSheetName, 'SELECT D WHERE F = TRUE AND I = FALSE'), gamer = items.map(function(item) {
   return item.toString();
   });
   if(gamer.length ===0){
-    //the items you are attempting to add to an order sheet have already been added previously.
-    SpreadsheetApp.getUi().alert("Nothing selected for new Order Sheet. please Check off an item's respective 'Order Request' box to add to Order List");
+    SpreadsheetApp.getUi().alert("Nothing selected for new Order Sheet. please Check off an item's respective 'Order Request' box and try again.");
   }else{
     var counter = 0;
     gamer.forEach(name=>{
@@ -91,9 +89,10 @@ function checkmate(){
       const q = "SELECT E WHERE J MATCHES "+name;
       const qu = "SELECT T WHERE J MATCHES "+name;
       const quo = "SELECT J WHERE J MATCHES "+name;
-        const jamero = queryASpreadsheet(ss.getId(), 'TRXIO', quo);
-        const gamero = queryASpreadsheet(ss.getId(), 'TRXIO', q);
+        var jamero = queryASpreadsheet(ss.getId(), 'TRXIO', quo);
         const camero = queryASpreadsheet(ss.getId(), 'TRXIO', qu);
+        const gamero = queryASpreadsheet(ss.getId(), 'TRXIO', q);
+        jamero = jamero.map(value=>value.replaceAll('""', ''));
         if(Number(camero[0])>0){
           orderisGiven.getRange("A"+i).setValue(jamero[0])
           orderisGiven.getRange("B"+i).setValue(camero[0])
@@ -105,7 +104,7 @@ function checkmate(){
     });
   const checkOff = stockChecklist(activeSheetName, orderSheetName, "D2:D", "A2:A");
   checkOff.forEach(x=>{
-    SpreadsheetApp.getActiveSpreadsheet().getSheetByName(activeSheetName).getRange("I"+x).setValue(true)
+      SpreadsheetApp.getActiveSpreadsheet().getSheetByName(activeSheetName).getRange("I"+x).setValue(true)
   });
   }
   SpreadsheetApp.getUi().alert('New Order List Created.');
@@ -121,11 +120,20 @@ function stockChecklist(checksheetname, ordersheetname, requestRange, stockRange
   var gmp = egg.join("ღ").split("ღ").flat();
   var mpo = neg.join("ღ").split("ღ").flat();
   const g = [...new Set(gmp)];
-  const k = [...new Set(mpo)];
+  var k = [...new Set(mpo)];
+  k = k.map((name)=>{
+    name.replace
+    return name.replaceAll("\"",'');
+  });
+  k = k.filter(function(o){
+    if(o!=''){
+      return o;
+    }
+  })
   var lindices = [];  
   const gerb = g.filter(function(thempo, index){
     if(k.includes(thempo)){
-      lindices.push(index+1);
+      lindices.push(index+2);
     }
   });
   return lindices;
@@ -133,45 +141,31 @@ function stockChecklist(checksheetname, ordersheetname, requestRange, stockRange
 
 function testRange(){
   var joj = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Hardware order");
-  var noj = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Order List");
+  var noj = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Order List Dated Wed Jun 22 2022 14:27:34 GMT-0400 (Eastern Daylight Time)");
   var egg = joj.getRange("D2:D").getValues();
   var neg = noj.getRange("A2:A").getValues();
   var gmp = egg.join("ღ").split("ღ").flat();
   var mpo = neg.join("ღ").split("ღ").flat();
   const g = [...new Set(gmp)];
-  const k = [...new Set(mpo)];
+  var k = [...new Set(mpo)];
+  k = k.map((name)=>{
+    name.replace
+    return name.replaceAll("\"",'');
+  });
+  k = k.filter(function(o){
+    if(o!=''){
+      return o;
+    }
+  })
   var lindices = [];  
   const gerb = g.filter(function(thempo, index){
     if(k.includes(thempo)){
-      lindices.push(index);
+      lindices.push(index+2);
     }
   });
-  return lindices;
+  return k;
 }
 
-function setReservedQuantity(){
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var trx = ss.getSheetByName("TRXIO");
-  var quo = "SELECT R WHERE R LIKE '#%'";
-  var namer = queryASpreadsheet(ss.getId(), 'TRXIO', quo);
-  var ger = [];
-  namer.forEach(name=>{
-    var totalResserveQty = 0;
-    var quantities = name.match(/\(.*?\)/g)
-        quantities = quantities.map(function(match) { 
-           quantitiy = match.slice(1, -1);
-           totalResserveQty += Number(quantitiy);
-      })
-      ger.push(totalResserveQty);
-  })
-  var valus = trx.getRange("R2:R").getValues();
-  var data = valus.find(/#/).map(x=>x+2);
-  var i = 0;
-  data.forEach(index=>{
-    trx.getRange("S"+index).setValue(ger[i]);
-    i=i+1;
-  })
-}
 
 function getLastDataRow(sheet) {
   var lastRow = sheet.getLastRow();
@@ -183,37 +177,35 @@ function getLastDataRow(sheet) {
   }              
 }
 
+function onEdit(event) {
+  var ss = SpreadsheetApp.getActiveSheet();
+  var me = Session.getActiveUser();
+  if (event.range.isChecked()){
+    var stonk = nextLetter(event.range.getA1Notation()[0]);
+    var ston = event.range.getA1Notation().replace(/\D/g,'');
+    var stonko = nextLetter(stonk);
+    ss.getRange(stonk+ston).setValue(new Date());
+    ss.getRange(stonko+ston).setValue(Session.getEffectiveUser().getUsername());
+  }
+   else if(event.range.isChecked() == false) {
+    var stonk = nextLetter(event.range.getA1Notation()[0]);
+    var ston = event.range.getA1Notation().replace(/\D/g,'');
+    var stonko = nextLetter(stonk);
+    ss.getRange(stonk+ston).setValue("");
+    ss.getRange(stonko+ston).setValue("");
 
-// // SAM on Edit 
-// function onEdit(event) {
-//   var ss = SpreadsheetApp.getActiveSheet();
-//   var me = Session.getActiveUser();
-//   if (event.range.isChecked()){
-//     var stonk = nextLetter(event.range.getA1Notation()[0]);
-//     var ston = event.range.getA1Notation().replace(/\D/g,'');
-//     var stonko = nextLetter(stonk);
-//     ss.getRange(stonk+ston).setValue(new Date());
-//     ss.getRange(stonko+ston).setValue(Session.getEffectiveUser().getUsername());
-//   }
-//   //  else if(event.range.isChecked() == false) {
-//   //   var stonk = nextLetter(event.range.getA1Notation()[0]);
-//   //   var ston = event.range.getA1Notation().replace(/\D/g,'');
-//   //   var stonko = nextLetter(stonk);
-//   //   ss.getRange(stonk+ston).setValue("");
-//   //   ss.getRange(stonko+ston).setValue("");
-
-//   // } 
+  } 
 
 
-// }
+}
 
-// function nextLetter(s){
-//     return s.replace(/([a-zA-Z])[^a-zA-Z]*$/, function(a){
-//         var c= a.charCodeAt(0);
-//         switch(c){
-//             case 90: return 'A';
-//             case 122: return 'a';
-//             default: return String.fromCharCode(++c);
-//         }
-//     });
-// }
+function nextLetter(s){
+    return s.replace(/([a-zA-Z])[^a-zA-Z]*$/, function(a){
+        var c= a.charCodeAt(0);
+        switch(c){
+            case 90: return 'A';
+            case 122: return 'a';
+            default: return String.fromCharCode(++c);
+        }
+    });
+}
