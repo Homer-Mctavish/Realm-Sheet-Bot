@@ -93,9 +93,15 @@ function checkmate(){
         const camero = queryASpreadsheet(ss.getId(), 'TRXIO', qu);
         const gamero = queryASpreadsheet(ss.getId(), 'TRXIO', q);
         jamero = jamero.map(value=>value.replaceAll('""', ''));
-        if(Number(camero[0])>0){
+      var thestrings = camero.map(function(item) {
+        return item.toString();
+      });
+      var arrOfNum = thestrings.map(str => {
+        return Number(str);
+      }).reduce((a, b) =>a+b, 0);
+        if(arrOfNum>0){
           orderisGiven.getRange("A"+i).setValue(jamero[0])
-          orderisGiven.getRange("B"+i).setValue(camero[0])
+          orderisGiven.getRange("B"+i).setValue(arrOfNum)
           orderisGiven.getRange("C"+i).setValue(gamero[0])
           i=i+1 
         }else{
@@ -107,9 +113,19 @@ function checkmate(){
       SpreadsheetApp.getActiveSpreadsheet().getSheetByName(activeSheetName).getRange("I"+x).setValue(true)
   });
   }
-  SpreadsheetApp.getUi().alert('New Order List Created.');
+  SpreadsheetApp.getUi().alert("New Order List Created. If an item you checked off wasn't added, it's Reference ID wasn't found on the TRXIO sheet");
   }
 }
+
+  // k = k.map((name)=>{
+  //   name.replace
+  //   return name.replaceAll("\"",'');
+  // });
+  // k = k.filter(function(o){
+  //   if(o!=''){
+  //     return o;
+  //   }
+  // })
 
 
 function stockChecklist(checksheetname, ordersheetname, requestRange, stockRange){
@@ -140,30 +156,18 @@ function stockChecklist(checksheetname, ordersheetname, requestRange, stockRange
 }
 
 function testRange(){
-  var joj = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Hardware order");
-  var noj = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Order List Dated Wed Jun 22 2022 14:27:34 GMT-0400 (Eastern Daylight Time)");
-  var egg = joj.getRange("D2:D").getValues();
-  var neg = noj.getRange("A2:A").getValues();
-  var gmp = egg.join("ღ").split("ღ").flat();
-  var mpo = neg.join("ღ").split("ღ").flat();
-  const g = [...new Set(gmp)];
-  var k = [...new Set(mpo)];
-  k = k.map((name)=>{
-    name.replace
-    return name.replaceAll("\"",'');
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), activeSheetName=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getSheetName();
+  items = queryASpreadsheet(ss.getId(), activeSheetName, 'SELECT D WHERE F = TRUE AND I = FALSE'), gamer = items.map(function(item) {
+  return item.toString();
   });
-  k = k.filter(function(o){
-    if(o!=''){
-      return o;
-    }
-  })
-  var lindices = [];  
-  const gerb = g.filter(function(thempo, index){
-    if(k.includes(thempo)){
-      lindices.push(index+2);
-    }
-  });
-  return k;
+    var counter = 0;
+    // gamer.forEach(name=>{
+      const tv = "SELECT J WHERE J MATCHES "+"'2N 01639-001'";
+      const b = queryASpreadsheet(ss.getId(), 'TRXIO', tv);
+      
+    //   counter +=b.length;
+    // });
+    return b;
 }
 
 
