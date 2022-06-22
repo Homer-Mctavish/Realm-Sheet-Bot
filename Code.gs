@@ -61,72 +61,54 @@ function queryASpreadsheet(sheetId, sheetName, queryString) {
   return arr;
 }
 
-//keep track of items with zero quantyity, if they are checked and passed, notify the user that certain items they attempted to add have not been added due to lack of available quantity
-// function checkmate(){
-//   var orderisGiven = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Order List'), activeSheetName=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getSheetName(),
-//   items = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), activeSheetName, 'SELECT D WHERE F = TRUE AND I = FALSE'), gamer = items.map(function(item) {
-//   return item.toString();
-//   });
-//   if(gamer.length !=0){
-//   var i = orderisGiven.getLastRow()+1;
-//   gamer.forEach(name=>{
-//     var q = "SELECT E WHERE J MATCHES "+name;
-//     var qu = "SELECT T WHERE J MATCHES "+name;
-//     var quo = "SELECT J WHERE J MATCHES "+name;
-//     var gamero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', q);
-//     var camero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', qu);
-//     var jamero = queryASpreadsheet(SpreadsheetApp.getActiveSpreadsheet().getId(), 'TRXIO', quo);
-//     if(Number(camero[0])>0){
-//       orderisGiven.getRange("A"+i).setValue(jamero[0])
-//       orderisGiven.getRange("B"+i).setValue(camero[0])
-//       orderisGiven.getRange("C"+i).setValue(gamero[0])
-//       i=i+1 
-//     }else{
-//       return;
-//     }
-//   });
-//   const checkOff = stockChecklist(activeSheetName, "Order List", "D2:D", "A2:A");
-//   checkOff.forEach(x=>{
-//     SpreadsheetApp.getActiveSpreadsheet().getSheetByName(activeSheetName).getRange("I"+x).setValue(true)
-//   })
-//   }else{
-//     return "idiot";
-//   }
-// }
 
 function checkmate(){
-  const activeSheetName=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getSheetName()
-  var ss=SpreadsheetApp.getActiveSpreadsheet(),
+  const ss=SpreadsheetApp.getActiveSpreadsheet(), activeSheetName=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getSheetName();
   items = queryASpreadsheet(ss.getId(), activeSheetName, 'SELECT D WHERE F = TRUE AND I = FALSE'), gamer = items.map(function(item) {
   return item.toString();
   });
-  if(gamer.length !=0){
-    var templateSheet = ss.getSheetByName('Order List'), orderisGiven=ss.insertSheet( "Order List Dated "+new Date(), 1, {template:templateSheet}), orderSheetName = orderisGiven.getName();
-    
+  if(gamer.length ===0){
+    //the items you are attempting to add to an order sheet have already been added previously.
+    SpreadsheetApp.getUi().alert("Nothing selected for new Order Sheet. please Check off an item's respective 'Order Request' box to add to Order List");
+  }else{
+    var counter = 0;
+    gamer.forEach(name=>{
+      const tv = "SELECT J WHERE J MATCHES "+name;
+      const b = queryASpreadsheet(ss.getId(), 'TRXIO', tv);
+      counter +=b.length;
+    });
+    if(counter===0){
+        SpreadsheetApp.getUi().alert('No Reference IDs found in the TRXIO sheet, or items exist on a previously created Order List.');
+        return;
+    }else{
+    const templateSheet = ss.getSheetByName('Order List');
+    const newSheet = "Order List Dated "+new Date();
+    const orderisGiven=ss.insertSheet( newSheet, ss.getSheets().length, {template:templateSheet});
+    ss.setActiveSheet(ss.getSheetByName(activeSheetName));
+    const orderSheetName = orderisGiven.getName();
     var i = orderisGiven.getLastRow()+1;
     gamer.forEach(name=>{
-      var q = "SELECT E WHERE J MATCHES "+name;
-      var qu = "SELECT T WHERE J MATCHES "+name;
-      var quo = "SELECT J WHERE J MATCHES "+name;
-      var gamero = queryASpreadsheet(ss.getId(), 'TRXIO', q);
-      var camero = queryASpreadsheet(ss.getId(), 'TRXIO', qu);
-      var jamero = queryASpreadsheet(ss.getId(), 'TRXIO', quo);
-      if(Number(camero[0])>0){
-        orderisGiven.getRange("A"+i).setValue(jamero[0])
-        orderisGiven.getRange("B"+i).setValue(camero[0])
-        orderisGiven.getRange("C"+i).setValue(gamero[0])
-        i=i+1 
-      }else{
-        return;
-      }
-  });
+      const q = "SELECT E WHERE J MATCHES "+name;
+      const qu = "SELECT T WHERE J MATCHES "+name;
+      const quo = "SELECT J WHERE J MATCHES "+name;
+        const jamero = queryASpreadsheet(ss.getId(), 'TRXIO', quo);
+        const gamero = queryASpreadsheet(ss.getId(), 'TRXIO', q);
+        const camero = queryASpreadsheet(ss.getId(), 'TRXIO', qu);
+        if(Number(camero[0])>0){
+          orderisGiven.getRange("A"+i).setValue(jamero[0])
+          orderisGiven.getRange("B"+i).setValue(camero[0])
+          orderisGiven.getRange("C"+i).setValue(gamero[0])
+          i=i+1 
+        }else{
+          return;
+        }
+    });
   const checkOff = stockChecklist(activeSheetName, orderSheetName, "D2:D", "A2:A");
   checkOff.forEach(x=>{
     SpreadsheetApp.getActiveSpreadsheet().getSheetByName(activeSheetName).getRange("I"+x).setValue(true)
-  })
-  }else{
-    //the items you are attempting to add to an order sheet have already been added previously.
-    SpreadsheetApp.getUi().alert('Nothing added to new Order Sheet. either you have added these items to a prior sheet or the Trxio sheet is misnamed/not formatted correctly.');
+  });
+  }
+  SpreadsheetApp.getUi().alert('New Order List Created.');
   }
 }
 
