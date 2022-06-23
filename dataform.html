@@ -7,43 +7,44 @@
 </style>
 
 <script>
+  function boten(){
+    google.script.run.buton();
+  }
 function ger(){
   run =google.script.run.withSuccessHandler(function(ar){
     document.getElementById('texto').value=ar.join("\n")
-    // ar.forEach(idx=>{
-    //   document.getElementById('texto').value=idx;
-    // })
   }).joj();
 };
-function reserve(){
-  google.script.run.setReservedQuantity();
-}
 
 function checkers(){
-  google.script.run.checkmate();
+  google.script.run.withSuccessHandler(function(ar){
+    google.script.run.withSuccessHandler(function(ar){
+      google.script.run.checkmate();
+    }).formula();
+  }).setReservedQuantity();
 }
-function bob(){
+
+function bote(){
+  google.script.run.tesdt();
+  }
+
+  function bob(){
   run =google.script.run.withSuccessHandler(function(ar){
-      document.getElementById('texto').value=ar;
+      document.getElementById('textor').value=ar;
 
   }).testRange();
   // google.script.run.testRange();
 }
-
-function joe(){
-  google.script.run.formula();
-}
 </script>
 
 </head>
-<h3>Data Validation for Internal Sheet</h3>
-<button type="submit"  onclick="ger()">find items in internal sheet with missing quantities:</button>
-<button type="submit"  onclick="reserve()">recalculate reserved quantity values:</button> 
-<button type="submit"  onclick="joe()">add total quantity values for TRXIO Sheet</button>
-<br>
-<button type="submit"  onclick="checkers()">find the checked items and import to warehouse sheet</button>
-<button type="submit"  onclick="bob()">test</button>
+<button type="submit"  onclick="ger()">find items in internal sheet with empty quantity cells:</button>
 <textarea  type="text" class="form-control" id="texto" rows="4" cols="50"> </textarea>
+<button type="submit"  onclick="checkers()">Create stock pull list from current sheet</button>
+<br>
+<br>
+<!-- <button type="submit"  onclick="bob()">test</button>
+<textarea  type="text" class="form-control" id="textor" rows="4" cols="50"> </textarea> -->
 </body>
 
 </html>
