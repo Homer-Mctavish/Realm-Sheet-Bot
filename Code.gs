@@ -70,17 +70,29 @@ function checkmate(){
     SpreadsheetApp.getUi().alert("Nothing selected for new Order Sheet. please Check off an item's respective 'Order Request' box and try again.");
   }else{
     var counter = 0;
+    var summa = 0;
     gamer.forEach(name=>{
+      const qu = "SELECT T WHERE J MATCHES "+name;
       const tv = "SELECT J WHERE J MATCHES "+name;
       const b = queryASpreadsheet(ss.getId(), 'TRXIO', tv);
+      let camero = queryASpreadsheet(ss.getId(), 'TRXIO', qu);
+      let thestrings = camero.map(function(item) {
+        return item.toString();
+      });
+      let arrOfNum = thestrings.map(str => {
+        return Number(str);
+      }).reduce((a, b) =>a+b, 0);
       counter +=b.length;
+      summa +=arrOfNum;
     });
-    if(counter===0){
-        SpreadsheetApp.getUi().alert('No Reference IDs found in the TRXIO sheet, or items exist on a previously created Order List.');
+    if(counter===0 || summa===0){
+        SpreadsheetApp.getUi().alert('No Reference IDs found in the TRXIO sheet, or items available quantity is zero.');
         return;
     }else{
     const templateSheet = ss.getSheetByName('Order List');
-    const newSheet = "Order List Dated "+new Date();
+    const date = new Date();
+    const newSheet = "Stock Pull List - "+ (date.getMonth() + 1) + "/" + date.getDate() +"/" + date.getFullYear();
+    //const newSheet = "Order List Dated "+new Date();
     const orderisGiven=ss.insertSheet( newSheet, ss.getSheets().length, {template:templateSheet});
     ss.setActiveSheet(ss.getSheetByName(activeSheetName));
     const orderSheetName = orderisGiven.getName();
@@ -127,6 +139,15 @@ function checkmate(){
   //   }
   // })
 
+function formula(){
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const trix = ss.getSheetByName("Copy of TRXIO");
+  const g = getLastDataRow(trix)
+  const a = getLastDataCol(trix)
+  const f = getLetter(a);
+  var rano = trix.getRange(f+'2').setFormula("=MINUS(O2,S2)")
+  rano.copyTo(trix.getRange(f+"2:"+f+g))
+}
 
 function stockChecklist(checksheetname, ordersheetname, requestRange, stockRange){
   var joj = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(checksheetname);
@@ -162,7 +183,7 @@ function testRange(){
   });
     var counter = 0;
     // gamer.forEach(name=>{
-      const tv = "SELECT J WHERE J MATCHES "+"'2N 01639-001'";
+      const tv = "SELECT J WHERE J MATCHES "+"'Transition Networks SISPM1040-3'";
       const b = queryASpreadsheet(ss.getId(), 'TRXIO', tv);
       
     //   counter +=b.length;
@@ -180,6 +201,22 @@ function getLastDataRow(sheet) {
     return range.getNextDataCell(SpreadsheetApp.Direction.UP).getRow();
   }              
 }
+
+function getLastDataCol(sheet) {
+  var lastCol = sheet.getLastColumn();
+  var colval = getLetter(lastCol);
+  var range = sheet.getRange(colval+"1");
+  if (range.getValue() !== "") {
+    return lastCol;
+  } else {
+    return range.getNextDataCell(SpreadsheetApp.Direction.NEXT).getColumn();
+  }              
+}
+
+      function getLetter(num){
+      var letter = String.fromCharCode(num + 64);
+      return letter;
+    }
 
 function onEdit(event) {
   var ss = SpreadsheetApp.getActiveSheet();

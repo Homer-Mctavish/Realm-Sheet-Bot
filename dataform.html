@@ -29,12 +29,17 @@ function bob(){
   }).testRange();
   // google.script.run.testRange();
 }
+
+function joe(){
+  google.script.run.formula();
+}
 </script>
 
 </head>
 <h3>Data Validation for Internal Sheet</h3>
 <button type="submit"  onclick="ger()">find items in internal sheet with missing quantities:</button>
 <button type="submit"  onclick="reserve()">set reserved quantity values:</button> 
+<button type="submit"  onclick="joe()">insert total quantity values at end of Trxio sheet</button>
 <br>
 <button type="submit"  onclick="checkers()">find the checked items and import to warehouse sheet</button>
 <button type="submit"  onclick="bob()">test</button>
