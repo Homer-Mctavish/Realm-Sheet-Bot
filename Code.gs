@@ -170,12 +170,18 @@ function setRowColors(sheetName) {
   var colors2d = rows1d.map(function(row, i){
     var color = i%2 === 0 ? "#ffffff" : "#efefef";
     return cols1d.map(function(col){
-        return color;
+        return color; 
     })
   })
-  sheet.getRange(1,1,1,numCols).setBackground('#000000').setFontColor('#FFFFFF');
-  sheet.getRange(2, 1, numRows, numCols).setBackgrounds(colors2d);
+  range.setHorizontalAlignment('left');
+  range.setVerticalAlignment('top');
+  sheet.getRange(1,1,1,numCols).setBackground('#000000').setFontColor('#FFFFFF').setFontSize('16');
+  sheet.getRange(2, 1, numRows, numCols).setBackgrounds(colors2d).setFontSize('14');
   
+  sheet.setColumnWidth(5,900);
+  sheet.getRange("E:E").setWrap(true);
+  sheet.autoResizeColumn(1);
+  SpreadsheetApp.flush();
   }
 
 function checkmate(){
@@ -209,7 +215,7 @@ function checkmate(){
     }else{
     SpreadsheetApp.getActiveSpreadsheet().toast('Creating new Stock Pull List...');
     const date = new Date();
-    const newSheet = "Stock Pull List - "+ date.toLocaleDateString()+" random ID: "+date.getMilliseconds();
+    const newSheet = "Stock Pull List - "+ date.toLocaleDateString()+": "+date.getMilliseconds();
     const orderisGiven=ss.insertSheet(newSheet, ss.getSheets().length);
     orderisGiven.getRange("A1").setValue("Ref #");
     orderisGiven.getRange("B1").setValue("Item");
@@ -240,11 +246,11 @@ function checkmate(){
         return Number(str);
       }).reduce((a, b) =>a+b, 0);
         if(arrOfNum>0){
-          orderisGiven.getRange("A"+i).setValue(jamero[0]);
-          orderisGiven.getRange("B"+i).setValue(gamero[0]);
+          orderisGiven.getRange("A"+i).setValue(jamero[0].replace(/"/g, ""));
+          orderisGiven.getRange("B"+i).setValue(gamero[0].replace(/"/g, ""));
           orderisGiven.getRange("C"+i).setValue(samero[0]);
           orderisGiven.getRange("D"+i).setValue(arrOfNum);
-          orderisGiven.getRange("E"+i).setValue(cont);
+          orderisGiven.getRange("E"+i).setValue(cont.replace(/"/g, ""));
           i=i+1;
         }else{
           return;
