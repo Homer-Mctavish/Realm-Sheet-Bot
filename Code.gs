@@ -86,21 +86,29 @@ function checkmate(){
       summa +=arrOfNum;
     });
     if(counter===0 || summa===0){
-        SpreadsheetApp.getUi().alert('No Reference IDs found in the TRXIO sheet, or items available quantity is zero.');
+        SpreadsheetApp.getUi().alert("No Reference IDs found in the TRXIO sheet, or items' available quantity is zero.");
         return;
     }else{
+      try{
+        ss.getSheetByName('Order List')
+      }catch(err){
+        SpreadsheetApp.getUi().alert("No 'Order List' sheet found. please include template sheet named 'Order List' and try again");
+        return;
+      }
     const templateSheet = ss.getSheetByName('Order List');
     const date = new Date();
-    const newSheet = "Stock Pull List - "+ (date.getMonth() + 1) + "/" + date.getDate() +"/" + date.getFullYear();
-    //const newSheet = "Order List Dated "+new Date();
+    const newSheet = "Stock Pull List - "+ date.toLocaleDateString()+" random ID: "+date.getSeconds();
     const orderisGiven=ss.insertSheet( newSheet, ss.getSheets().length, {template:templateSheet});
-    ss.setActiveSheet(ss.getSheetByName(activeSheetName));
     const orderSheetName = orderisGiven.getName();
     var i = orderisGiven.getLastRow()+1;
     gamer.forEach(name=>{
       const q = "SELECT E WHERE J MATCHES "+name;
       const qu = "SELECT T WHERE J MATCHES "+name;
       const quo = "SELECT J WHERE J MATCHES "+name;
+      const quot = "SELECT C WHERE J MATCHES "+name;
+      const quote = "SELECT E WHERE D MATCHES "+name;
+      var samero = queryASpreadsheet(ss.getId(),activeSheetName, quote);
+      var bamero = queryASpreadsheet(ss.getId(), 'TRXIO', quot);
         var jamero = queryASpreadsheet(ss.getId(), 'TRXIO', quo);
         const camero = queryASpreadsheet(ss.getId(), 'TRXIO', qu);
         const gamero = queryASpreadsheet(ss.getId(), 'TRXIO', q);
@@ -108,14 +116,17 @@ function checkmate(){
       var thestrings = camero.map(function(item) {
         return item.toString();
       });
+      var cont = bamero.join(",")
       var arrOfNum = thestrings.map(str => {
         return Number(str);
       }).reduce((a, b) =>a+b, 0);
         if(arrOfNum>0){
-          orderisGiven.getRange("A"+i).setValue(jamero[0])
-          orderisGiven.getRange("B"+i).setValue(arrOfNum)
-          orderisGiven.getRange("C"+i).setValue(gamero[0])
-          i=i+1 
+          orderisGiven.getRange("A"+i).setValue(jamero[0]);
+          orderisGiven.getRange("B"+i).setValue(gamero[0]);
+          orderisGiven.getRange("C"+i).setValue(samero[0]);
+          orderisGiven.getRange("D"+i).setValue(arrOfNum);
+          orderisGiven.getRange("E"+i).setValue(cont);
+          i=i+1;
         }else{
           return;
         }
@@ -125,7 +136,7 @@ function checkmate(){
       SpreadsheetApp.getActiveSpreadsheet().getSheetByName(activeSheetName).getRange("I"+x).setValue(true)
   });
   }
-  SpreadsheetApp.getUi().alert("New Order List Created. If an item you checked off wasn't added, it's Reference ID wasn't found on the TRXIO sheet");
+  SpreadsheetApp.getUi().alert("New Order List Created.");
   }
 }
 
@@ -141,7 +152,7 @@ function checkmate(){
 
 function formula(){
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const trix = ss.getSheetByName("Copy of TRXIO");
+  const trix = ss.getActiveSheet();
   const g = getLastDataRow(trix)
   const a = getLastDataCol(trix)
   const f = getLetter(a);
@@ -177,21 +188,47 @@ function stockChecklist(checksheetname, ordersheetname, requestRange, stockRange
 }
 
 function testRange(){
-  var ss = SpreadsheetApp.getActiveSpreadsheet(), activeSheetName=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getSheetName();
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), activeSheetName=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getSheetName(), b;
   items = queryASpreadsheet(ss.getId(), activeSheetName, 'SELECT D WHERE F = TRUE AND I = FALSE'), gamer = items.map(function(item) {
   return item.toString();
   });
-    var counter = 0;
+    //var counter = 0;
+    // var bulbo = [];
     // gamer.forEach(name=>{
-      const tv = "SELECT J WHERE J MATCHES "+"'Transition Networks SISPM1040-3'";
-      const b = queryASpreadsheet(ss.getId(), 'TRXIO', tv);
-      
+      // const tv = "SELECT J WHERE J MATCHES "+"'Transition Networks SISPM1040-3'";
+      // const b = queryASpreadsheet(ss.getId(), 'TRXIO', tv);
+      const name ="'SnapAV B6-XLR-3FM-2FT'";
+      const quot = "SELECT C WHERE J MATCHES "+name;
+      b = queryASpreadsheet(ss.getId(), 'TRXIO', quot);
+      b.join(",")
     //   counter +=b.length;
     // });
     return b;
 }
 
-
+function setReservedQuantity(){
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var trx = ss.getActiveSheet();
+  var quo = "SELECT R WHERE R LIKE '#%'";
+  var namer = queryASpreadsheet(ss.getId(), 'TRXIO', quo);
+  var ger = [];
+  namer.forEach(name=>{
+    var totalResserveQty = 0;
+    var quantities = name.match(/\(.*?\)/g)
+        quantities = quantities.map(function(match) { 
+           quantitiy = match.slice(1, -1);
+           totalResserveQty += Number(quantitiy);
+      })
+      ger.push(totalResserveQty);
+  })
+  var valus = trx.getRange("R2:R").getValues();
+  var data = valus.find(/#/).map(x=>x+2);
+  var i = 0;
+  data.forEach(index=>{
+    trx.getRange("S"+index).setValue(ger[i]);
+    i=i+1;
+  })
+}
 function getLastDataRow(sheet) {
   var lastRow = sheet.getLastRow();
   var range = sheet.getRange("A" + lastRow);
