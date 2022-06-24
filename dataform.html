@@ -50,13 +50,6 @@ function addItems(selectedItemToPaste,itemQty,itemRoom){
   //sheet.getRange(e.range.getRow(), col).setValue(selectedItemToPaste);
 
 }
-// window.addEventListener('load', function(){
-//     if (localStorage.pick) {
-//         var sel = document.querySelector('#room-types');
-//         sel.value = localStorage.pick;
-//     }
-// });
-
 
 function imp(){
   google.script.run.doimp();
@@ -85,34 +78,7 @@ function addListValues(values) {
       }
 }
 
-function onFailure(err) {
-      alert('There was an error!' + err.message);
-    }
-
-  
-  function submitData() {
-    var roomNames = document.getElementById('room-name').value;
-    var selectedType = document.getElementById("room-types");
-    var selectedTypeText= selectedType.options[selectedType.selectedIndex].text;
-
-
-
-if (roomNames.length < 2 || selectedTypeText.length < 1){
-window.alert("Please make sure Room Name is entered and BOM Type is selected");
-return;
-}
-
-    google.script.run.insertItems(roomNames,selectedTypeText);
-  }
-
-//need to seperate the two purposes of addBOMtoTemplate(); the obtaining the name and verification and selected    elements addition
-    // var feed = google.script.run.addBOMtoTemplate();
-    // var select = document.getElementById("room-types");
-    // var c = document.createElement("option");
-    // c.text =feed;
-    // select.options.add(c,select.options.length);
-
-  function submitAddBom() {
+function submitAddBom() {
     google.script.run.withSuccessHandler(function(ar){
     var select = document.getElementById("room-types");
     var c = document.createElement("option");
@@ -121,40 +87,55 @@ return;
     }).addBOMtoTemplate();
   }
 
-  function loadBOMTypes() {
-    google.script.run.withSuccessHandler(function(ar) 
-  {
-      var roomBOMSelect = document.getElementById("room-types");
-      roomBOMSelect.options.length = 0;
-      let option = document.createElement("option");
-      option.value = "";
-      option.text = "";
-      roomBOMSelect.appendChild(option);
-      
-      let option2 = document.createElement("option");
-      option2.value = "00";
-      option2.text = "Selected Text";
-      roomBOMSelect.appendChild(option2);  
+function onFailure(err) {
+      alert('There was an error!' + err.message);
+}
 
-      ar.forEach(function(item, index) 
-      {    
-        let option = document.createElement("option");
-        option.value = item[1];
-        option.text = item[0];
-        roomBOMSelect.appendChild(option);    
-      });
-    
-  }).getBOMList();
-};
+  function submitData() {
+    var roomNames = document.getElementById('room-name').value;
+    var selectedType = document.getElementById("room-types");
+    var selectedTypeText= selectedType.options[selectedType.selectedIndex].text;
+    if (roomNames.length < 2 || selectedTypeText.length < 1){
+      window.alert("Please make sure Room Name is entered and BOM Type is selected");
+      return;
+    }
+    google.script.run.insertItems(roomNames,selectedTypeText);
+  }
 
 //added by SS
   function launchR(){
     google.script.run.runRealmItemAdd();
   }
 
-  function testl(){
+  function formit(){
     google.script.run.addRow();
   }
+
+function autoUpdate(){
+    google.script.run.withSuccessHandler(function(re){
+    document.getElementById("room-types").innerHTML = "";
+    re.forEach(kop=>{
+      let boml = document.getElementById("room-types");
+      let option = document.createElement("option");
+      option.text=kop.replace(/"/g, "");
+      boml.add(option, boml.length);
+    });
+  }).returneo();
+  setTimeout(autoUpdate, 5000);
+}
+
+function testl(){
+    google.script.run.withSuccessHandler(function(re){
+    document.getElementById('textor').value=re;
+    document.getElementById("room-types").innerHTML = "";
+    re.forEach(kop=>{
+      let boml = document.getElementById("room-types");
+      let option = document.createElement("option");
+      option.text=kop.replace(/"/g, "");
+      boml.add(option, boml.length);
+    });
+  }).superiorImport();
+}
 
   function gobo(){
     let sheetName = document.getElementById('ssheet').value;
@@ -204,17 +185,15 @@ return;
          <button type="button" class="btn btn-outline-primary" onclick="submitData()" style="margin-top:20px">Add to BOM</button>
        <div class="col-9">
         <select id="room-types" ></select>
-        <script>
-          loadBOMTypes();
-        </script>
+        <!-- <script>autoUpdate();</script> -->
        </div>
        </div>
        <div class="col-9" style="margin-top:10px">
         <button type="button" class="btn btn-outline-primary" onclick="submitAddBom()" style="margin-top:20px">Add new BOM type</button>
         </div>
-      <div class="col-9" style="margin-top:10px">
+      <!-- <div class="col-9" style="margin-top:10px">
         <button type="button" class="btn btn-outline-primary" onclick="loadBOMTypes()" style="margin-top:20px">Refresh BOM List</button>
-      </div>
+      </div> -->
     </div>
     </div>
 </li>
@@ -255,7 +234,7 @@ return;
             <button type="button" class="btn btn-outline-primary" onclick="imp()">import sheets</button>
           </div>
           <div class="col-6">
-            <button type="button" class="btn btn-outline-primary" onclick="testl()">add rows with formulas</button>
+            <button type="button" class="btn btn-outline-primary" onclick="formit()">add rows with formulas</button>
           </div>
         </div>
      <div class="row">
@@ -271,8 +250,9 @@ return;
     </div>
 </li>
 <li>
-  <textarea></textarea>
+  <textarea id="textor"></textarea>
   <button type="button" class="btn btn-outline-primary" onclick="sql()">SQL connect</button>
+  <button type="button" class="btn btn-outline-primary" onclick="testl()">the test</button>
   </li>
 </ul>
 </body>

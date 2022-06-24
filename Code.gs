@@ -66,15 +66,6 @@ function runRealmItemAdd() {
 }
 
 //added by SS
-var ssApp = {
-  activeSpreadSheet: SpreadsheetApp.getActiveSpreadsheet(),
-  activeSheet: SpreadsheetApp.getActiveSheet(),
-  namedSheet: function(name){ activeSpreadSheet.getSheetByName(name)},
-  idSheet: function(id){activeSpreadSheet.openByID},
-  setA1Val: function(range, value){
-    activeSpreadSheet.getRange(range).setValue(value);
-  }
-}
 const activeSpreadSheet = SpreadsheetApp.getActiveSpreadsheet();
 const activeSheet = SpreadsheetApp.getActiveSheet();
 //todo: instantiate this variable when the proper spreadsheet is active
@@ -98,22 +89,66 @@ function protection(rabge){
  * Only works (and only should work) when rows are highlighted entirely across and add rows before is chosen as the method of addition.
  */
 
+
+Array.prototype.find = function(regex) {
+  const arr = this;
+  const matches = arr.filter( function(e) { return regex.test(e); } );
+  return matches.map(function(e) { return arr.indexOf(e); } );
+};
+
+const deepGet = (obj, keys) =>
+  keys.reduce(
+    (xs, x) => (xs && xs[x] !== null && xs[x] !== undefined ? xs[x] : null),
+    obj
+  );
+
+//sheetId, sheetName, queryString
+function queryASpreadsheet(sheetId, sheetName, queryString) {
+ var url = 'https://docs.google.com/spreadsheets/d/'+sheetId+'/gviz/tq?'+
+            'sheet='+sheetName+
+            '&tq=' + encodeURIComponent(queryString);
+  var params = {
+    headers: {
+      'Authorization': 'Bearer ' + ScriptApp.getOAuthToken()
+    },
+    muteHttpExceptions: true
+  };
+  var ret  = UrlFetchApp.fetch(url, params).getContentText();
+  var k = JSON.parse(ret.replace("/*O_o*/", "").replace("google.visualization.Query.setResponse(", "").slice(0, -2));
+  var depp = deepGet(k, ['table','rows']);
+  var arr = [];
+  depp.forEach(column=>{
+    arr.push(JSON.stringify(column['c'][0].v))
+  });
+  return arr;
+}
+
+
+
 function addRow(){
-  var sheet = ssApp.activeSheet;
+  var sheet = activeSheet;
   var range = sheet.getActiveRange();
     try {
     let fill = sheet.getRange("2:2");
     SpreadsheetApp.flush();
     sheet.insertRowsAfter(range.getLastRow(), range.getValues().length);
+    let row1=range.getRow()
+    let row2=range.getLastRow();
+    let dist = row2-row1;
+    let nrow1 = row1+dist+1;
+    let nrow2 = row2+dist+1;
+    let stringi = nrow1+":"+nrow2;
+    let itbe = sheet.getRange(stringi);
     SpreadsheetApp.flush();
-    fill.copyTo(range, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
+    fill.copyTo(itbe, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
+    return stringi;
   } catch (err){
     Logger.log('Failed with an error %s', + err.message)
   }
 }
 
 function getItemList() {
-    var sheet = ssApp.activeSpreadSheet.getSheetByName("Item Import");
+    var sheet = activeSpreadSheet.getSheetByName("Item Import");
     try {
     let data = sheet.getDataRange().getValues()
     let array = [];
@@ -136,16 +171,16 @@ function getItemList() {
  * @param {String}  itemRoom:   name of room item will be added to.
  */
 function addItems(selectedItemToPaste,itemQty,itemRoom){ 
-  let sheet = ssApp.activeSheet;
+  let sheet = activeSheet;
   let srow = sheet.getActiveRange().getRow();
   let scolumn = sheet.getActiveRange().getColumn();
 
   //change scolumn to letter, change s
   let scolumnlet1 = getLetter(scolumn-2);
   let scolumnlet2 = getLetter(scolumn+1);
-  ssApp.activeSpreadSheet.getRange(scolumnlet1+srow).setValue(itemRoom.toUpperCase());
+  activeSpreadSheet.getRange(scolumnlet1+srow).setValue(itemRoom.toUpperCase());
   SpreadsheetApp.getActiveRange().setValue(selectedItemToPaste);
-  ssApp.activeSpreadSheet.getRange(scolumnlet2+srow).setValue(itemQty);
+  activeSpreadSheet.getRange(scolumnlet2+srow).setValue(itemQty);
 }
 
 
@@ -164,6 +199,7 @@ function getBOMList() {
 //   var result = ui.prompt("Please input BOM Type");
 //   return result.getResponseText();
 // }
+
 
 function addBOMtoTemplate() {
   var ui = SpreadsheetApp.getUi();
@@ -209,6 +245,24 @@ function addBOMtoTemplate() {
     return bomName;
   }
 }
+
+function onEdit(e){
+  if(e.source.getActiveSheet().getName()==="BOM"){
+    return true;
+  }else{
+    return false;
+  }
+}
+
+function returneo(){
+  let ss = SpreadsheetApp.getActiveSpreadsheet().getId();
+  let query = "SELECT A WHERE A IS NOT NULL ";
+  let hur = queryASpreadsheet("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4", "BOM", query);
+  const dur = queryASpreadsheet(ss, "BOM", query); 
+  const hurdur = hur.concat(dur)
+  return hurdur;
+}
+
 //end add
 function openDialog() {
   var html = HtmlService.createTemplateFromFile('dataform')
@@ -303,18 +357,6 @@ function insertItems(selectedRoomNameInput, selectedBomType) {
     });
   }
 
-  function obtainBOMListAddition(bomTypo){
-    var bomSheet = ss.getSheetByName("BOM");
-    var bomSheetLastRow = getFirstEmptyBOMRowWholeRow(bomSheet);
-    var bomSheetValue = bomSheet.getRange("A2:" + "BQ" + bomSheetLastRow).getValues();
-    for (var i =0; i < (bomSheetLastRow - 1); i++){
-      var bombi = bomSheetValue[i][0];
-      if(bomTypo === bombi){
-        return bombi;
-      }
-    }
-  }
-
 
 //added by SS
 /**
@@ -385,24 +427,17 @@ function vLookup(sheet, value, searchRange, grabit, place){
   }
 }
 
-//the spreadsheet id is the id of the associated spreadsheetID, and the sheetname is the specific sheet 
-//of the spreadsheet. 
-//the queryColumnLetterStart is the A1 Notation of the cell you wish to start at searching
-//the queryColumnLetterEnd is the A1 Notation of the cell you wish to finish searching
-//the queryColumnLetterSearch is the A1 Notation of the column you wish to search in
-function querylanguageSearch(sheetName, queryColumnLetterStart, queryColumnLetterEnd, queryColumnLetterSearch, query)
-{
-  try{
-    myQuery = "SELECT * WHERE " + queryColumnLetterSearch + " = '" + query + "'";
-    //after the /d/ is where + sheetID +'/gviz can go
-    var qvizURL = 'https://docs.google.com/spreadsheets/d/1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4' + '/gviz/tq?tqx=out:json&headers=1&sheet=' + sheetName + '&range=' + queryColumnLetterStart + ":" + queryColumnLetterEnd + '&tq=' + encodeURIComponent(myQuery);
 
-    var ret = UrlFetchApp.fetch(qvizURL, {headers: {Authorization: 'Bearer ' + ScriptApp.getOAuthToken()}}).getContentText();
-    activeSheet.getRange("A1").setValue(JSON.parse(ret.replace("/*O_o*/", "").replace("google.visualization.Query.setResponse(", "").slice(0, -2)));
-    //return JSON.parse(ret.replace("/*O_o*/", "").replace("google.visualization.Query.setResponse(", "").slice(0, //-2));
-  }catch(err){
-    console.log('error: %s', err);
-  }
+//find way to return A1 notation of the columns which we want to select null adjacents from
+function testRange(sheet){
+  var ss = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheet);
+  // var id = ss.getSheetId();
+  var id = SpreadsheetApp.getActiveSpreadsheet().getId();
+  var range = ss.getRange("A1:C");
+  //format of query string must be have all spaces replaced with %20
+  var qu = 'SELECT C WHERE D IS NULL';
+  var data = queryASpreadsheet(id, sheet, range, qu);
+  sheet.getRange()
 }
 
 function importList(linktoimport, startingrowindex, startingcolumnindex, sheetName) {
@@ -416,37 +451,44 @@ function importList(linktoimport, startingrowindex, startingcolumnindex, sheetNa
   sheetimportto.getRange(1,1,values.length,values[0].length).setValues(values);
 }
 
+function superiorImport(){
+  const ss = activeSpreadSheet;
+  const querum = "SELECT A where B IS NOT NULL AND C IS NOT NULL AND D IS NOT NULL AND E IS NOT NULL";
+  const queru = "SELECT B where A IS NOT NULL AND C IS NOT NULL AND D IS NOT NULL AND E IS NOT NULL";
+  const quer = "SELECT C where B IS NOT NULL AND A IS NOT NULL AND D IS NOT NULL AND E IS NOT NULL";
+  const que = "SELECT D where A IS NOT NULL AND C IS NOT NULL AND A IS NOT NULL AND E IS NOT NULL";
+  const qu = "SELECT E where A IS NOT NULL AND C IS NOT NULL AND D IS NOT NULL AND A IS NOT NULL";
+  const ttems= queryASpreadsheet("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4","Items",querum);
+  const ttem= queryASpreadsheet("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4","Items",queru);
+  const tte= queryASpreadsheet("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4","Items",quer);
+  const tt= queryASpreadsheet("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4","Items",que);
+  const t= queryASpreadsheet("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4","Items",qu);
+  var i=0;
+  ttem.forEach(item=>{
+    let custom = ss.getSheetByName("Custom Sheet");
+    let master = ss.getSheetByName("Master Sheet");
+    // master.getRange("A"+i).setValue(ttems[0]);
+    // custom.getRange("A"+i).setValue(ttems[0]);
+    // master.getRange("B"+i).setValue(ttem[0]);
+    // custom.getRange("B"+i).setValue(ttem[0]);
+    // master.getRange("C"+i).setValue(tte[0]);
+    // custom.getRange("C"+i).setValue(tte[0]);
+    // master.getRange("D"+i).setValue(tt[0]);
+    // custom.getRange("D"+i).setValue(tt[0]);
+    // master.getRange("E"+i).setValue(t[0]);
+    // custom.getRange("E"+i).setValue(t[0]);
+    // custom.getRange("A"+i).setValue(item);
+    // custom.getRange("A"+i).setValue(item);
+    custom.getRange("A"+i).setValue(ttem[i])
+    i=i+1;
+  });
+  return ttem;
+}
+
 function doimp(){
   importList("https://docs.google.com/spreadsheets/d/1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4/edit#gid=0", 1, 1, "Custom Sheet");
   importList("https://docs.google.com/spreadsheets/d/1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4/edit#gid=0", 1, 1, "Master Sheet");
 }
-
-// function onEdit(e) {
-//   const row = e.range.getRow();
-//   const col = e.range.getColumn();
-//   var scolumnlet2 = getLetter(col);
-//   // if(e.source.getActiveSheet().getName()==="Sheet37"&& col >= 1 && row=== 3 && e.value=== 'TRUE'){
-//   //   alerto ="original cell changed to: "+e.source.getActiveSheet().getRange(scolumnlet2+row).getValue();
-//   // }
-//   // e.source.getActiveSheet().getRange("C1").setValue(e.source.getActiveSheet().getRange(scolumnlet2+row).getValue());
-//   return e.source.getActiveSheet().getRange(scolumnlet2+row).getValue();
-// }
-
-// function sendNotification(sheet, changingarea) {
-//   var arrg = [];
-  // var cellScan = sheet.getRange(changingarea).forEach(cell=>{
-  //   cell.getActiveCell().getA1Notation().getValue().toString();
-  // });
-//   cellScan.forEach(function onEdit(e){
-//   const range = e.range;
-//   var alert = "";
-//   range.forEach(cell =>{
-//     alert ="original changed to: "+cell.getValue()
-//     arrg.push(alert);
-//   });
-// });
-// return arrg;
-// };
 
 function getLastDataCol(sheet) {
   var lastCol = sheet.getLastColumn();
