@@ -23,34 +23,6 @@ function addItem(){
 
 }
 
-const activeSpreadSheet = SpreadsheetApp.getActiveSpreadsheet();
-const activeSheet = SpreadsheetApp.getActiveSheet();
-
-function getItemList() {
-    var sheet = activeSpreadSheet.getSheetByName("Item Import");
-    var data = sheet.getDataRange().getValues()
-    var array = [];
-    data.forEach(function(row){array.push([row[0],row[1]]); });
-   // Logger.log(array);
-    return array;
-}
-
-function addItems(selectedItemToPaste,itemQty,itemRoom){ 
-  let sheet = activeSpreadSheet.getActiveSheet();
-  srow = sheet.getActiveRange().getRow();
-  scolumn = sheet.getActiveRange().getColumn();
-  
-  //SpreadsheetApp.getUi().alert(srow + " " + scolumn );
-  activeSpreadSheet.getRange(srow,scolumn-2).setValue(itemRoom);
-  SpreadsheetApp.getActiveRange().setValue(selectedItemToPaste);
-  activeSpreadSheet.getRange(srow,scolumn+1).setValue(itemQty);
- // addForumlas();
-  sheet.setActiveRange(sheet.getRange(srow+1,scolumn));
-  //var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  //sheet.getRange(e.range.getRow(), col).setValue(selectedItemToPaste);
-
-}
-
 function imp(){
   google.script.run.doimp();
 }
@@ -121,20 +93,19 @@ function autoUpdate(){
       boml.add(option, boml.length);
     });
   }).returneo();
-  setTimeout(autoUpdate, 5000);
 }
+
 
 function testl(){
     google.script.run.withSuccessHandler(function(re){
     document.getElementById('textor').value=re;
-    document.getElementById("room-types").innerHTML = "";
-    re.forEach(kop=>{
-      let boml = document.getElementById("room-types");
-      let option = document.createElement("option");
-      option.text=kop.replace(/"/g, "");
-      boml.add(option, boml.length);
-    });
-  }).superiorImport();
+    // re.forEach(kop=>{
+    //   let boml = document.getElementById("room-types");
+    //   let option = document.createElement("option");
+    //   option.text=kop.replace(/"/g, "");
+    //   boml.add(option, boml.length);
+    // });
+  }).testRange();
 }
 
   function gobo(){
@@ -184,8 +155,8 @@ function testl(){
        <div class="col">
          <button type="button" class="btn btn-outline-primary" onclick="submitData()" style="margin-top:20px">Add to BOM</button>
        <div class="col-9">
-        <select id="room-types" ></select>
-        <!-- <script>autoUpdate();</script> -->
+        <select id="room-types" onclick="autoUpdate()" ></select>
+        <script>autoUpdate();</script>
        </div>
        </div>
        <div class="col-9" style="margin-top:10px">

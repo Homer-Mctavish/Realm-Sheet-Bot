@@ -123,8 +123,6 @@ function queryASpreadsheet(sheetId, sheetName, queryString) {
   return arr;
 }
 
-
-
 function addRow(){
   var sheet = activeSheet;
   var range = sheet.getActiveRange();
@@ -427,18 +425,47 @@ function vLookup(sheet, value, searchRange, grabit, place){
   }
 }
 
-
-//find way to return A1 notation of the columns which we want to select null adjacents from
-function testRange(sheet){
-  var ss = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheet);
-  // var id = ss.getSheetId();
-  var id = SpreadsheetApp.getActiveSpreadsheet().getId();
-  var range = ss.getRange("A1:C");
-  //format of query string must be have all spaces replaced with %20
-  var qu = 'SELECT C WHERE D IS NULL';
-  var data = queryASpreadsheet(id, sheet, range, qu);
-  sheet.getRange()
+function querySearch(v, scol, wcol, sheetName){
+    let iD = activeSpreadSheet.getId();
+    let val = "'"+v+"'";
+    const query = "SELECT "+scol+" WHERE "+wcol+" MATCHES "+val;
+    let vlook = queryASpreadsheet(iD, sheetName, query);
+    return vlook[0];
 }
+
+/**
+ * Searches a column for a passed columns' values from active sheet in another sheet. 
+ * if found sets the specified value from that other sheet into active sheet's approprite column cell.
+ * 
+ * @param {String}  searchSheet:  the name of the sheet you want to search
+ * @param {String}  sourceSheet:  the name of the sheet you want to search from 
+ * @param {String}  colSearch:  the column you want to search with, for if colMatch column has values identical to the ones in the sourceSheet
+ * @param {String}  colMatch:   the column you want the values from, if the values in the ColSearch column are identical to the source sheets' values
+ * @param {String}  sourceSheet:  the name of the sheet you want to search from 
+ */
+function newVlookup(searchSheet, sourceSheet, colMatch, colSearch, colWrite){
+  let gh = activeSpreadSheet.getSheetByName(sourceSheet).getRange(colMatch+"1:"+colMatch).getValues();
+  let values = gh.filter(String);
+  var i = 7;
+  values.forEach(name=>{
+    let hgp = querySearch(name, colMatch, colSearch, searchSheet);
+    activeSpreadSheet.getSheetByName(sourceSheet).getRange(colWrite+i).setValue(hgp);
+    i=i+1;
+  });  
+}
+
+function testRange(){
+  let coff = "C";
+  let gh = activeSpreadSheet.getSheetByName("Sheet37").getRange(coff+"1:"+coff).getValues();
+  let values = gh.filter(String);
+  var i = 7;
+  values.forEach(name=>{
+    let hgp = querySearch(name, "C", "A", "Item Import");
+    activeSpreadSheet.getSheetByName("Sheet37").getRange("G"+i).setValue(hgp);
+    i=i+1;
+  });
+}
+
 
 function importList(linktoimport, startingrowindex, startingcolumnindex, sheetName) {
   //get values to be imported from the linked sheet
@@ -449,40 +476,6 @@ function importList(linktoimport, startingrowindex, startingcolumnindex, sheetNa
   var sheetimportto=activeSpreadSheet.getSheetByName(sheetName);
   //set  values imported   
   sheetimportto.getRange(1,1,values.length,values[0].length).setValues(values);
-}
-
-function superiorImport(){
-  const ss = activeSpreadSheet;
-  const querum = "SELECT A where B IS NOT NULL AND C IS NOT NULL AND D IS NOT NULL AND E IS NOT NULL";
-  const queru = "SELECT B where A IS NOT NULL AND C IS NOT NULL AND D IS NOT NULL AND E IS NOT NULL";
-  const quer = "SELECT C where B IS NOT NULL AND A IS NOT NULL AND D IS NOT NULL AND E IS NOT NULL";
-  const que = "SELECT D where A IS NOT NULL AND C IS NOT NULL AND A IS NOT NULL AND E IS NOT NULL";
-  const qu = "SELECT E where A IS NOT NULL AND C IS NOT NULL AND D IS NOT NULL AND A IS NOT NULL";
-  const ttems= queryASpreadsheet("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4","Items",querum);
-  const ttem= queryASpreadsheet("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4","Items",queru);
-  const tte= queryASpreadsheet("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4","Items",quer);
-  const tt= queryASpreadsheet("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4","Items",que);
-  const t= queryASpreadsheet("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4","Items",qu);
-  var i=0;
-  ttem.forEach(item=>{
-    let custom = ss.getSheetByName("Custom Sheet");
-    let master = ss.getSheetByName("Master Sheet");
-    // master.getRange("A"+i).setValue(ttems[0]);
-    // custom.getRange("A"+i).setValue(ttems[0]);
-    // master.getRange("B"+i).setValue(ttem[0]);
-    // custom.getRange("B"+i).setValue(ttem[0]);
-    // master.getRange("C"+i).setValue(tte[0]);
-    // custom.getRange("C"+i).setValue(tte[0]);
-    // master.getRange("D"+i).setValue(tt[0]);
-    // custom.getRange("D"+i).setValue(tt[0]);
-    // master.getRange("E"+i).setValue(t[0]);
-    // custom.getRange("E"+i).setValue(t[0]);
-    // custom.getRange("A"+i).setValue(item);
-    // custom.getRange("A"+i).setValue(item);
-    custom.getRange("A"+i).setValue(ttem[i])
-    i=i+1;
-  });
-  return ttem;
 }
 
 function doimp(){
