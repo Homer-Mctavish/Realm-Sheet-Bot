@@ -192,12 +192,6 @@ function getBOMList() {
 }
 //end edit
 
-// function dialogBox(){
-//   var ui = SpreadsheetApp.getUi();
-//   var result = ui.prompt("Please input BOM Type");
-//   return result.getResponseText();
-// }
-
 
 function addBOMtoTemplate() {
   var ui = SpreadsheetApp.getUi();
@@ -240,7 +234,6 @@ function addBOMtoTemplate() {
       item += 2;
       qty+=2;
     }
-    return bomName;
   }
 }
 
@@ -393,15 +386,6 @@ function itemDesc(){
   }
 }
 
-function testingfd(){
-  var j=activeSpreadSheet.getSheetByName("Sheet37");
-  j.getRange("A19:A").setValue(j.getRange("$A$2:D").getValues());
-}
-
-//VLOOKUP(C2,'Item Import'!$A$2:D,2,0)
-//C2=value(value is the cell you want to search for of I.E. C2), 'Item Import'!$A$2:D= sheet searchrange, where $A$2:D= is searchrange and 'Item Import'! is sheet, and 2=place, or the location to return the value of.
-//grabit is the column of data you wish to get
-
 /**
  * Searches a range for a passed cell value from active sheet in another sheet. 
  * if found sets the specified adjacent cell value from that other sheet into the active sheet's cell.
@@ -433,6 +417,7 @@ function querySearch(v, scol, wcol, sheetName){
     return vlook[0];
 }
 
+
 /**
  * Searches a column for a passed columns' values from active sheet in another sheet. 
  * if found sets the specified value from that other sheet into active sheet's approprite column cell.
@@ -443,10 +428,10 @@ function querySearch(v, scol, wcol, sheetName){
  * @param {String}  colMatch:   the column you want the values from, if the values in the ColSearch column are identical to the source sheets' values
  * @param {String}  sourceSheet:  the name of the sheet you want to search from 
  */
-function newVlookup(searchSheet, sourceSheet, colMatch, colSearch, colWrite){
-  let gh = activeSpreadSheet.getSheetByName(sourceSheet).getRange(colMatch+"1:"+colMatch).getValues();
+function newVlookup(searchSheet, sourceSheet, colVal, colMatch, colSearch, colWrite){
+  let gh = activeSpreadSheet.getSheetByName(sourceSheet).getRange(colVal+"1:"+colVal).getValues();
   let values = gh.filter(String);
-  var i = 7;
+  var i = 2;
   values.forEach(name=>{
     let hgp = querySearch(name, colMatch, colSearch, searchSheet);
     activeSpreadSheet.getSheetByName(sourceSheet).getRange(colWrite+i).setValue(hgp);
@@ -454,16 +439,127 @@ function newVlookup(searchSheet, sourceSheet, colMatch, colSearch, colWrite){
   });  
 }
 
-function testRange(){
-  let coff = "C";
-  let gh = activeSpreadSheet.getSheetByName("Sheet37").getRange(coff+"1:"+coff).getValues();
-  let values = gh.filter(String);
-  var i = 7;
-  values.forEach(name=>{
-    let hgp = querySearch(name, "C", "A", "Item Import");
-    activeSpreadSheet.getSheetByName("Sheet37").getRange("G"+i).setValue(hgp);
-    i=i+1;
-  });
+
+//note that row[mul1] where mul1=0 is valRs' first row values. for D2:G17 it represents D2:D17. row[mul2] where mul2=3 is G2:G17.
+function multo(sheet, valR, setR, mul1, mul2){
+  var sheet = activeSpreadSheet.getSheetByName(sheet);
+  var data = sheet.getRange(valR).getValues();
+  var newData = [];
+  for (i in data){
+    let row = data[i];
+    let multiply = row[mul1] * row[mul2];
+    newData.push([multiply]);
+  }
+  sheet.getRange(setR).setValues(newData);
+
+}
+
+
+function fastMulti(sheem, vertu, setC, col){
+  let idiot = 1-activeSpreadSheet.getSheetByName("Project Calcs").getRange("C9").getValue();
+  let stupid = activeSpreadSheet.getSheetByName("Project Calcs").getRange("C5").getValue();
+  let sheen = activeSpreadSheet.getSheetByName(sheem);
+  var data = sheen.getRange(vertu).getValues();
+  var newData = [];
+  for(i in data){
+    let row = data[i];
+    let multiply = row[col]*(stupid*idiot);
+    newData.push([multiply.toFixed(2)]);
+  }
+  sheen.getRange(setC).setValues(newData);
+}
+
+function subto(sheetd, valR, setR, fiS, seS){
+  let sheete = activeSpreadSheet.getSheetByName(sheetd);
+  let data = sheete.getRange(valR).getValues();
+  let newData = [];
+  for (i in data){
+    let row = data[i];
+    let multiply = row[fiS] - row[seS];
+    newData.push([multiply]);
+  }
+  sheete.getRange(setR).setValues(newData);
+
+}
+
+function roundh(value, precision) {
+    var multiplier = Math.pow(10, precision || 0);
+    return Math.round(value * multiplier) / multiplier;
+}
+
+function roundo(sneet, vermo, setT, como){
+  let n = activeSpreadSheet.getSheetByName(sneet);
+  let m = n.getRange(vermo).getValues();
+  let newData = [];
+  for (i in m){
+    let row = m[i];
+    let round = roundh(row[como], -2);
+    newData.push([round]);
+  }
+  n.getRange(setT).setValues(newData);
+}
+
+function addendum(smort, ramora, setback, p1, p2,p3){
+  let joke = activeSpreadSheet.getSheetByName(smort);
+  let elf = joke.getRange(ramora).getValues();
+  let newData = [];
+  for (i in elf){
+    let row = elf[i];
+    let addo =row[p1]+row[p2]+row[p3];
+    newData.push([addo]);
+  }
+  joke.getRange(setback).setValues(newData);
+
+}
+
+function fixedMulto(fj, nonfixed, setC, col, fixed){
+  let sheet = activeSpreadSheet.getSheetByName(fj);
+  var data = sheet.getRange(nonfixed).getValues();
+  var newData = [];
+  for(i in data){
+    let row = data[i];
+    const fjf = activeSpreadSheet.getSheetByName("Project Calcs").getRange(fixed).getValue();
+    let multiply = row[col] * fjf;
+    newData.push([multiply]);
+  }
+  sheet.getRange(setC).setValues(newData);
+}
+
+function fixedMulto2(fj, nonfixed, setC, col, fixed){
+  let sheet = activeSpreadSheet.getSheetByName(fj);
+  var data = sheet.getRange(nonfixed).getValues();
+  var newData = [];
+  for(i in data){
+    let row = data[i];
+    const fjf = 1-activeSpreadSheet.getSheetByName("Project Calcs").getRange(fixed).getValue();
+    let multiply = row[col] * fjf;
+    newData.push([multiply]);
+  }
+  sheet.getRange(setC).setValues(newData);
+}
+
+//find a way to change the area that adds each formula be selected by an active range selected by onEdit. 
+//Additionally, change how querySearch function works to be similar to the setvalues thing used for all the calculations here to see if that speeds up newVlookup
+async function testRange(){
+  const [f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u] = await Promise.all(
+    [ 
+      newVlookup("Item Import", "Copy of Internal", "C", "C", "A", "G"), 
+      newVlookup("Item Import", "Copy of Internal", "C", "D", "A", "I"), 
+      fixedMulto2("Copy of Internal", "I2:I17", "K2:K17", 0, "C10"), 
+      multo( "Copy of Internal","D2:G17", "H2:H17", 0, 3),
+      multo( "Copy of Internal","D2:I17", "J2:J17", 0, 5), 
+      subto("Copy of Internal", "H2:L17", "Q2:Q17", 0, 4),
+      subto("Copy of Internal", "O2:P17", "R2:R17", 0, 1),
+      fastMulti("Copy of Internal", "D2:K17", "L2:L17", 0, 7),
+      fixedMulto("Copy of Internal", "L2:L17", "U2:U17", 0, "C8"),
+      fixedMulto("Copy of Internal", "J2:J17", "N2:N17", 0, "C3"),
+      fixedMulto("Copy of Internal", "N2:N17", "O2:O17", 0, "C4"),
+      fixedMulto("Copy of Internal", "J2:J17", "M2:M17", 0, "C6"),
+      fastMulti("Copy of Internal", "N2:N17", "P2:P17", 0),
+      fixedMulto("Copy of Internal", "M2:M17", "S2:S17", 0, "C7"),
+      addendum("Copy of Internal", "Q2:S17", "T2:T17", 0, 1, 2),
+      roundo("Copy of Internal", "L2:L17", "F2:F17", 0) 
+    ]);
 }
 
 
@@ -505,10 +601,8 @@ function getLastDataRow(sheet) {
   }              
 }
 
+function isOdd(num) { return num & 1; };
 //end add
-//optimised by SS
-  function isOdd(num) { return num & 1; };
-//end optimzation
 
   function getFirstEmptyRowWholeRow() {
     var sheet = SpreadsheetApp.getActiveSheet();
