@@ -219,9 +219,9 @@ function checkmate(){
     const orderisGiven=ss.insertSheet(newSheet, ss.getSheets().length);
     orderisGiven.getRange("A1").setValue("Ref #");
     orderisGiven.getRange("B1").setValue("Item");
-    orderisGiven.getRange("C1").setValue("Qty Selected");
+    orderisGiven.getRange("C1").setValue("Qty Requested");
     orderisGiven.getRange("D1").setValue("Qty on Hand");
-    orderisGiven.getRange("E1").setValue("Location");
+    orderisGiven.getRange("E1").setValue("Location (Shows Reserved Locations too");
     orderisGiven.getRange("F1").setValue(activeSheetName);
     const orderSheetName = orderisGiven.getName();
     var i = orderisGiven.getLastRow()+1;
@@ -266,6 +266,7 @@ function checkmate(){
   }
 }
 
+
 function joj(){
   var ss = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Internal for order");
   var range1 = ss.getRange("C2:C").getValues();
@@ -290,6 +291,22 @@ function joj(){
     }
   });
   return rList;
+}
+
+function matcher(x, goo, ber){
+  if(goo === x){
+    return ber;
+  }else{
+    return x;
+  }
+}
+
+function findAndReplace(rangeo, found, replaced){
+  let gop = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getRange(rangeo);
+  let array = gop.getValues();
+  let doubledArray = array.map(([a]) => [matcher(a, found, replaced)]);
+  gop.setValues(doubledArray);
+  SpreadsheetApp.getActiveSpreadsheet().toast('Items replaced');
 }
 
 function onEdit(event) {

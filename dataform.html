@@ -35,14 +35,45 @@ function bote(){
   }).testRange();
   // google.script.run.testRange();
 }
+
+function kek(){
+  const ran = document.getElementById("range").value;
+  const dan = document.getElementById("toreplace").value;
+  const fan = document.getElementById("replacewith").value;
+  google.script.run.findAndReplace(ran, dan, fan);
+}
 </script>
 
 </head>
 <button type="submit"  onclick="ger()">find items in internal sheet with empty quantity cells:</button>
 <textarea  type="text" class="form-control" id="texto" rows="4" cols="50"> </textarea>
+<br>
+<br>
+MAKE SURE YOU ARE ON THE SHEET YOU WANT TO PROCESS BEFORE CREATING STOCK PULL
+<br>
+<br>
 <button type="submit"  onclick="checkers()">Create stock pull list from current sheet</button>
 <br>
 <br>
+<div class="container">
+  <div class="row">
+    <div class="col">
+    <h3>Range to search (must be in A1 Notation, EX: C2:C for all of column c starting at row 2):</h3>
+    <input type="text" id="range" value="">
+    </div>
+    <div class="col">
+    <h3>String to find:</h3>
+    <input type="text" id="toreplace" value="">
+    </div>
+    <div class="col">
+    <h3>String to replace found instances with:</h3>
+    <input type="text" id="replacewith" value="">
+    </div>
+      <div class="col">
+        <button type="submit"  onclick="kek()">Find and replace( must be actively viewing sheet you want to perform this function on)</button>
+    </div>
+  </div>
+</div>
 <!-- <button type="submit"  onclick="bob()">test</button>
 <textarea  type="text" class="form-control" id="textor" rows="4" cols="50"> </textarea> -->
 </body>
