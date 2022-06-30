@@ -68,8 +68,12 @@ function runRealmItemAdd() {
 //added by SS
 const activeSpreadSheet = SpreadsheetApp.getActiveSpreadsheet();
 const activeSheet = SpreadsheetApp.getActiveSheet();
-//todo: instantiate this variable when the proper spreadsheet is active
-// var cellulor = activeSpreadSheet.getSelection().getActiveRangeList().getRanges();
+
+let protectedFormulas = activeSpreadSheet.getSheetByName("Internal").getRange("F2:U2");
+if(protectedFormulas.canEdit() === true){
+  let protection = protectedFormulas.protect();
+  protection.removeEditors(protection.getEditors());
+}
 
 function protection(rabge){
   var protection = rabge.protect();
@@ -142,6 +146,17 @@ function addRow(){
     return stringi;
   } catch (err){
     Logger.log('Failed with an error %s', + err.message)
+  }
+}
+
+function setAllFormulas(){
+  let sheet = activeSpreadSheet.getSheetByName("Internal");
+  try{
+    let fill = sheet.getRange("F2:U2");
+    let all = sheet.getRange("F3:U"+getLastDataRow(sheet));
+    fill.copyTo(all, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
+  }catch(err){
+    console.log('Failed with stupid error %s', + err.message);
   }
 }
 
@@ -289,7 +304,6 @@ function insertItems(selectedRoomNameInput, selectedBomType) {
       range += sel[i].getA1Notation() + ', ';
     }
 
-
     selectedRoomNames.forEach(function (selectedRoomName) {
       if ((selectedRoomName.length > 0) && (selectedRoomName !== " ")) {
         var selectedValuesArrayCount = selectedValues.length;
@@ -387,21 +401,21 @@ function itemDesc(){
 }
 
 // searches for the missing value by creating a datatable and using indexOf in order to obtain the resulting value's index. this is quicker
-// than a for loop but takes about 15 seconds to obtain one result... no good!
-function vLookup(sheet, value, searchRange, grabit, place){
-  var s = activeSpreadSheet.getActiveSheet();     
-  var data = activeSpreadSheet.getSheetByName(sheet);
-  var searchValue = s.getRange(value).getValue();
-  var dataValues = data.getRange(searchRange).getValues();
-  var dataList = dataValues.join("ღ").split("ღ");
-  var index = dataList.indexOf(searchValue);
-  if (index === -1) {
-      throw new Error('Value not found')
-  } else {
-      var foundValue = data.getRange(grabit+(index+2)).getValue();
-      s.getRange(place).setValue(foundValue);
-  }
-}
+// than a for loop but takes about 2043 ms to obtain one result... no good!
+// function vLookup(sheet, value, searchRange, grabit, place){
+//   var s = activeSpreadSheet.getActiveSheet();     
+//   var data = activeSpreadSheet.getSheetByName(sheet);
+//   var searchValue = s.getRange(value).getValue();
+//   var dataValues = data.getRange(searchRange).getValues();
+//   var dataList = dataValues.join("ღ").split("ღ");
+//   var index = dataList.indexOf(searchValue);
+//   if (index === -1) {
+//       throw new Error('Value not found')
+//   } else {
+//       var foundValue = data.getRange(grabit+(index+2)).getValue();
+//       s.getRange(place).setValue(foundValue);
+//   }
+// }
 
 function querySearch(v, scol, wcol, sheetName){
     let iD = activeSpreadSheet.getId();
@@ -411,6 +425,27 @@ function querySearch(v, scol, wcol, sheetName){
     return vlook[0];
 }
 
+function onEditNote() {
+  
+  // get spreadsheet
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('Copy of Internal');
+  
+  // get active cell
+  var activeCell = sheet.getActiveCell();
+  
+  // get any existing cell value
+  var currentCellValue = activeCell.getValue();
+  Logger.log('Current cell value is: ' + currentCellValue);
+  
+  // get any existing cell Note
+  var currentCellNote = activeCell.getNote();
+  Logger.log('Current Note contains: ' + currentCellNote);
+  
+  // set Note on the edited cell with above information
+  activeCell.setNote('Last modified: ' + new Date() + '\n' + 'Cell value: ' + "'" + currentCellValue + "'" + '\n\n' + currentCellNote);
+  
+}
 
 /**
  * Searches a column for a passed columns' values from active sheet in another sheet. 
@@ -426,7 +461,7 @@ function querySearch(v, scol, wcol, sheetName){
 function newVlookup(searchSheet, sourceSheet, colVal, colMatch, colSearch, colWrite){
   let gh = activeSpreadSheet.getSheetByName(sourceSheet).getRange(colVal+"1:"+colVal).getValues();
   let values = gh.filter(String);
-  var i = 2;
+  var i = 3;
   values.forEach(name=>{
     let hgp = querySearch(name, colMatch, colSearch, searchSheet);
     activeSpreadSheet.getSheetByName(sourceSheet).getRange(colWrite+i).setValue(hgp);
@@ -473,62 +508,57 @@ function getLastDataRow(sheet) {
   }              
 }
 
-function copeAndSeethe(sheetS,sheetV, valRange, inRange, setRange, searchColumn, matchColumn, returnColumn){
-  let sheete = activeSpreadSheet.getSheetByName(sheetS);
-  let sheetv = activeSpreadSheet.getSheetByName(sheetV);
-  let data = sheete.getRange(valRange).getValues();
-  let data2 = sheetv.getRange(inRange).getValues();
-  let newData = [];
-  for (i in data){
-    let row = data[i];
-    let pow = data2[i]
-    if(row[searchColumn] === pow[matchColumn]){
-      let momus = row[returnColumn];
-      newData.push([momus])
-    }
-  }
-  sheete.getRange(setRange).setValues(newData);
+// function copeAndSeethe(sheetS,sheetV, valRange, inRange, setRange, searchColumn, matchColumn, returnColumn){
+//   let sheete = activeSpreadSheet.getSheetByName(sheetS);
+//   let sheetv = activeSpreadSheet.getSheetByName(sheetV);
+//   let data = sheete.getRange(valRange).getValues();
+//   let data2 = sheetv.getRange(inRange).getValues();
+//   let newData = [];
+//   for (i in data){
+//     let row = data[i];
+//     let pow = data2[i]
+//     if(row[searchColumn] === pow[matchColumn]){
+//       let momus = row[returnColumn];
+//       newData.push([momus])
+//     }
+//   }
+//   sheete.getRange(setRange).setValues(newData);
+// }
+
+
+function newVlookup2(searchSheet, sourceSheet, colVal, colMatch, colSearch, colWrite){
+  let gh = activeSpreadSheet.getSheetByName(sourceSheet).getRange(colVal+"1:"+colVal).getValues();
+  let values = gh.filter(String);
+  var i = 3;
+  values.forEach(name=>{
+    let hgp = dquerySearch(name, colMatch, colSearch, searchSheet);
+    activeSpreadSheet.getSheetByName(sourceSheet).getRange(colWrite+i).setValue(hgp);
+    i=i+1;
+  });  
 }
 
 //accept a list of ranges as parameters and apply queryAsSpreadsheet2 to each and push the results to an empty array.
-function testRange(){
-  // const sheet = activeSpreadSheet.getId();
-  // const gak = "Item Import";
-  // const query = "SELECT A GROUP BY C";
-  // const queryList = queryASpreadsheet2(sheet, gak, query);
-  // //qpo is strictly a 1 dimensional array containing the values a 
-  // let qpo = activeSpreadSheet.getSheetByName("Copy of Internal").getRange("C2:C15").getValues().filter(String);
-  // qpo.map(x => )
-  // activeSpreadSheet.getSheetByName("Item Import").getRange("E2:E"+qpo.length).setValues(1);
-  const searchIn = "Item Import";
-  const searchFrom = "Copy of Internal";
-  const valueLoc = "A2:C";
-  const valueSpr = "C2:C";
-  const placeLoc = "E2:E";
-  copeAndSeethe(searchIn, searchFrom, valueLoc, valueSpr, placeLoc, 0, 0, 2);
 
-}
-
-function onEdit(e){
-  if(e.source.activeSheet().getSheetName()==="Copy of Internal"){
-    let changedValues = changedRange.getValues();
-    let changedLength = changedValues.length;
-    let expressedChanges = e.source.oldValues();
-    let changedRange = activeSpreadSheet.getSheetByName("Copy of Internal").getRange("F2:F"+expressedChanges.length);
-    let messageList = [];
-    for(let i =0; i<expressedChanges.length; i++){
-      if(expressedChanges.getActiveRange().getA1Notation()===changedRange.getA1Notation()){
-        let newrow = changedValues[i];
-        let oldrow = expressedChanges[i];
-        let message = "value "+oldrow[colofchange]+" has changed to "+newrow[colofotherchange];
-        messageList.push(message);
-      }
-    }
-  return messageList;
-  }else{
-    return;
-  }
-}
+// function onEdit(e){
+//   if(e.source.activeSheet().getSheetName()==="Copy of Internal"){
+//     let changedValues = changedRange.getValues();
+//     let changedLength = changedValues.length;
+//     let expressedChanges = e.source.oldValues();
+//     let changedRange = activeSpreadSheet.getSheetByName("Copy of Internal").getRange("F2:F"+expressedChanges.length);
+//     let messageList = [];
+//     for(let i =0; i<expressedChanges.length; i++){
+//       if(expressedChanges.getActiveRange().getA1Notation()===changedRange.getA1Notation()){
+//         let newrow = changedValues[i];
+//         let oldrow = expressedChanges[i];
+//         let message = "value "+oldrow[colofchange]+" has changed to "+newrow[colofotherchange];
+//         messageList.push(message);
+//       }
+//     }
+//   return messageList;
+//   }else{
+//     return;
+//   }
+// }
 
 function jod(sheetId, sheetName, d){
   return d.map(arg => 'https://docs.google.com/spreadsheets/d/'+sheetId+'/gviz/tq?'+
@@ -683,6 +713,14 @@ function importList(linktoimport, startingrowindex, startingcolumnindex, sheetNa
   //set  values imported   
   sheetimportto.getRange(1,1,values.length,values[0].length).setValues(values);
 }
+
+function testRange(){
+  const start = Date.now();
+  importList("https://docs.google.com/spreadsheets/d/1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4/edit#gid=0", 1, 1, "Master Sheet");
+  const duration = Date.now() - start;
+  return duration;
+}
+
 
 function doimp(){
   importList("https://docs.google.com/spreadsheets/d/1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4/edit#gid=0", 1, 1, "Custom Sheet");
