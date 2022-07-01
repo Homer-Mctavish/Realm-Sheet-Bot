@@ -1,3 +1,10 @@
+function setImportRange(url, iD, sheetName){
+  let sheeto = activeSpreadSheet.getSheetByName(sheetName);
+  const importation = SpreadsheetApp.openById(iD); 
+  let lastRow = getLastDataRow(importation);
+  var isit = sheeto.getRange("A1").setFormula('=IMPORTRANGE("'+url+'","items!A1:E'+lastRow+'")');
+}
+
 function showSidebar() {
   var html = HtmlService.createHtmlOutputFromFile('dataform')
     .setTitle('Estimator Robot');
@@ -13,6 +20,9 @@ function onOpen() {
     .addItem('Show Estimator sidebar', 'showSidebar')
     // .addItem('Refresh', 'refreshPrompt')
     .addToUi();
+    setImportRange("https://docs.google.com/spreadsheets/d/1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4/edit#gid=0", "1gZvsAIcLfsbiCG0--cDgkl5wqx4X-8L2Zpf-6FGFyWY","Master Sheet");
+    setImportRange("https://docs.google.com/spreadsheets/d/1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4/edit#gid=0", "1gZvsAIcLfsbiCG0--cDgkl5wqx4X-8L2Zpf-6FGFyWY","Custom Sheet");
+
 }
 
 function authorizeItemImport(){
@@ -85,15 +95,6 @@ function protection(rabge){
   }
 }
 
-
-
-//can be turned into an onEdit solution where rather than asynchronusly adding some cells via highlight, whatever added cells just have the range coppied to.
-/**
- * sets highlighted number of rows as number to be added, preserves formulas contained within all of them. 
- * Only works (and only should work) when rows are highlighted entirely across and add rows before is chosen as the method of addition.
- */
-
-
 Array.prototype.find = function(regex) {
   const arr = this;
   const matches = arr.filter( function(e) { return regex.test(e); } );
@@ -127,6 +128,81 @@ function queryASpreadsheet(sheetId, sheetName, queryString) {
   return arr;
 }
 
+//SpreadsheetApp.getActiveSpreadsheet().toast('here can be a message that pops up when you run the function or whatever it is');
+
+// function testRange(){
+//   setImportRange("https://docs.google.com/spreadsheets/d/1gZvsAIcLfsbiCG0--cDgkl5wqx4X-8L2Zpf-6FGFyWY/edit#gid=0","1gZvsAIcLfsbiCG0--cDgkl5wqx4X-8L2Zpf-6FGFyWY", "Copy of Item Import")
+// }
+
+
+var dateofexecution;
+var newinfo = activeSpreadSheet.getSheetByName("Copy of Item Import").getRange("C2:C").getValues();
+
+function dataExecutionState(scannedsheet){
+  let refresher = SpreadsheetApp.DataExecutionStatus.getLastRefreshedTime();
+  if (refresher !== dateofexecution){
+    let hal = scannedsheet.getRange("C2:C").getValues();
+    let intersect = hal.filter(function(obj) { return newinfo.indexOf(obj) == -1; });
+    newinfo = hal;
+    dateofexecution = refresher;
+    return intersect;
+  }else{
+    return "no recent changes";
+  }
+}
+
+
+function testRange(){
+  // dataExecutionState(activeSpreadSheet.getSheetByName("Copy of Item Import"));
+  let varer = SpreadsheetApp.getActiveSpreadsheet
+  return SpreadsheetApp.DataExecutionStatus;
+
+}
+
+// Add data source with query parameter.
+// function addDataSource() {
+//   SpreadsheetApp.DataExecutionStatus.getLastRefreshedTime()
+//   SpreadsheetApp.enableBigQueryExecution();
+//   let spreadsheet = SpreadsheetApp.getActive();
+
+//   // Add a new sheet and use A1 cell as the parameter cell.
+//   let parameterCell = spreadsheet.insertSheet('parameterSheet').getRange('A1');
+//   parameterCell.setValue('Duke');
+
+//   // Add data source with query parameter.
+//   let dataSourceSpec = SpreadsheetApp.newDataSourceSpec()
+//       .asBigQuery()
+//       .setProjectId('<YOUR_PROJECT_ID>')
+//       .setRawQuery('select * from `bigquery-public-data`.`ncaa_basketball`.`mbb_historical_tournament_games` WHERE win_school_ncaa = @SCHOOL')
+//       .setParameterFromCell('SCHOOL', 'parameterSheet!A1')
+//       .build();
+//   var dataSourceSheet = spreadsheet.insertDataSourceSheet(dataSourceSpec);
+//   dataSourceSheet.asSheet().setName('ncaa_data');
+//   dataSourceSheet.getStatus()
+// }
+
+// // Function used to configure event trigger to refresh data source sheet.
+// function refreshOnParameterEdit(e) {
+//   var editedRange = e.range;
+// if (editedRange.getSheet().getName() != 'parameterSheet') {
+//   return;
+// }
+// // Check that the edited range includes A1.
+// if (editedRange.getRow() > 1 || editedRange.getColumn() > 1) {
+//    return;
+// }
+
+//   var spreadsheet = e.source;
+//   SpreadsheetApp.enableBigQueryExecution();
+//   spreadsheet.getSheetByName('ncaa_data').asDataSourceSheet().refreshData();
+// }
+
+function onlyNumbers(array) {
+  return array.every(element => {
+    return typeof element === 'number';
+  });
+}
+
 function addRow(){
   var sheet = activeSheet;
   var range = sheet.getActiveRange();
@@ -152,6 +228,7 @@ function addRow(){
 function setAllFormulas(){
   let sheet = activeSpreadSheet.getSheetByName("Internal");
   try{
+    
     let fill = sheet.getRange("F2:U2");
     let all = sheet.getRange("F3:U"+getLastDataRow(sheet));
     fill.copyTo(all, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
@@ -249,14 +326,6 @@ function addBOMtoTemplate() {
       item += 2;
       qty+=2;
     }
-  }
-}
-
-function onEdit(e){
-  if(e.source.getActiveSheet().getName()==="BOM"){
-    return true;
-  }else{
-    return false;
   }
 }
 
@@ -400,23 +469,6 @@ function itemDesc(){
   }
 }
 
-// searches for the missing value by creating a datatable and using indexOf in order to obtain the resulting value's index. this is quicker
-// than a for loop but takes about 2043 ms to obtain one result... no good!
-// function vLookup(sheet, value, searchRange, grabit, place){
-//   var s = activeSpreadSheet.getActiveSheet();     
-//   var data = activeSpreadSheet.getSheetByName(sheet);
-//   var searchValue = s.getRange(value).getValue();
-//   var dataValues = data.getRange(searchRange).getValues();
-//   var dataList = dataValues.join("ღ").split("ღ");
-//   var index = dataList.indexOf(searchValue);
-//   if (index === -1) {
-//       throw new Error('Value not found')
-//   } else {
-//       var foundValue = data.getRange(grabit+(index+2)).getValue();
-//       s.getRange(place).setValue(foundValue);
-//   }
-// }
-
 function querySearch(v, scol, wcol, sheetName){
     let iD = activeSpreadSheet.getId();
     let val = "'"+v+"'";
@@ -425,27 +477,27 @@ function querySearch(v, scol, wcol, sheetName){
     return vlook[0];
 }
 
-function onEditNote() {
+// function NoteE() {
   
-  // get spreadsheet
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName('Copy of Internal');
+//   // get spreadsheet
+//   var ss = SpreadsheetApp.getActiveSpreadsheet();
+//   var sheet = ss.getSheetByName('Copy of Internal');
   
-  // get active cell
-  var activeCell = sheet.getActiveCell();
+//   // get active cell
+//   var activeCell = sheet.getActiveCell();
   
-  // get any existing cell value
-  var currentCellValue = activeCell.getValue();
-  Logger.log('Current cell value is: ' + currentCellValue);
+//   // get any existing cell value
+//   var currentCellValue = activeCell.getValue();
+//   Logger.log('Current cell value is: ' + currentCellValue);
   
-  // get any existing cell Note
-  var currentCellNote = activeCell.getNote();
-  Logger.log('Current Note contains: ' + currentCellNote);
+//   // get any existing cell Note
+//   var currentCellNote = activeCell.getNote();
+//   Logger.log('Current Note contains: ' + currentCellNote);
   
-  // set Note on the edited cell with above information
-  activeCell.setNote('Last modified: ' + new Date() + '\n' + 'Cell value: ' + "'" + currentCellValue + "'" + '\n\n' + currentCellNote);
+//   // set Note on the edited cell with above information
+//   activeCell.setNote('Last modified: ' + new Date() + '\n' + 'Cell value: ' + "'" + currentCellValue + "'" + '\n\n' + currentCellNote);
   
-}
+// }
 
 /**
  * Searches a column for a passed columns' values from active sheet in another sheet. 
@@ -508,24 +560,6 @@ function getLastDataRow(sheet) {
   }              
 }
 
-// function copeAndSeethe(sheetS,sheetV, valRange, inRange, setRange, searchColumn, matchColumn, returnColumn){
-//   let sheete = activeSpreadSheet.getSheetByName(sheetS);
-//   let sheetv = activeSpreadSheet.getSheetByName(sheetV);
-//   let data = sheete.getRange(valRange).getValues();
-//   let data2 = sheetv.getRange(inRange).getValues();
-//   let newData = [];
-//   for (i in data){
-//     let row = data[i];
-//     let pow = data2[i]
-//     if(row[searchColumn] === pow[matchColumn]){
-//       let momus = row[returnColumn];
-//       newData.push([momus])
-//     }
-//   }
-//   sheete.getRange(setRange).setValues(newData);
-// }
-
-
 function newVlookup2(searchSheet, sourceSheet, colVal, colMatch, colSearch, colWrite){
   let gh = activeSpreadSheet.getSheetByName(sourceSheet).getRange(colVal+"1:"+colVal).getValues();
   let values = gh.filter(String);
@@ -536,29 +570,6 @@ function newVlookup2(searchSheet, sourceSheet, colVal, colMatch, colSearch, colW
     i=i+1;
   });  
 }
-
-//accept a list of ranges as parameters and apply queryAsSpreadsheet2 to each and push the results to an empty array.
-
-// function onEdit(e){
-//   if(e.source.activeSheet().getSheetName()==="Copy of Internal"){
-//     let changedValues = changedRange.getValues();
-//     let changedLength = changedValues.length;
-//     let expressedChanges = e.source.oldValues();
-//     let changedRange = activeSpreadSheet.getSheetByName("Copy of Internal").getRange("F2:F"+expressedChanges.length);
-//     let messageList = [];
-//     for(let i =0; i<expressedChanges.length; i++){
-//       if(expressedChanges.getActiveRange().getA1Notation()===changedRange.getA1Notation()){
-//         let newrow = changedValues[i];
-//         let oldrow = expressedChanges[i];
-//         let message = "value "+oldrow[colofchange]+" has changed to "+newrow[colofotherchange];
-//         messageList.push(message);
-//       }
-//     }
-//   return messageList;
-//   }else{
-//     return;
-//   }
-// }
 
 function jod(sheetId, sheetName, d){
   return d.map(arg => 'https://docs.google.com/spreadsheets/d/'+sheetId+'/gviz/tq?'+
@@ -678,7 +689,7 @@ function fixedMulto2(fj, nonfixed, setC, col, fixed){
   sheet.getRange(setC).setValues(newData);
 }
 
-//find a way to change the area that adds each formula be selected by an active range selected by onEdit. 
+//find a way to change the area that adds each formula be selected by an active range selected by editedcells. 
 //Additionally, change how querySearch function works to be similar to the setvalues thing used for all the calculations here to see if that speeds up newVlookup
 // async function moFo(){
 //   const [f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u] = await Promise.all(
@@ -701,31 +712,6 @@ function fixedMulto2(fj, nonfixed, setC, col, fixed){
 //       roundo("Copy of Internal", "L2:L", "F2:F", 0) 
 //     ]);
 // }
-
-
-function importList(linktoimport, startingrowindex, startingcolumnindex, sheetName) {
-  //get values to be imported from the linked sheet
-  var s = SpreadsheetApp.openByUrl(linktoimport);
-  var rowstocopy = getLastDataRow(s);
-  var colstocopy = getLastDataCol(s);     
-  var values = s.getSheetValues(startingrowindex, startingcolumnindex, rowstocopy, colstocopy);
-  var sheetimportto=activeSpreadSheet.getSheetByName(sheetName);
-  //set  values imported   
-  sheetimportto.getRange(1,1,values.length,values[0].length).setValues(values);
-}
-
-function testRange(){
-  const start = Date.now();
-  importList("https://docs.google.com/spreadsheets/d/1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4/edit#gid=0", 1, 1, "Master Sheet");
-  const duration = Date.now() - start;
-  return duration;
-}
-
-
-function doimp(){
-  importList("https://docs.google.com/spreadsheets/d/1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4/edit#gid=0", 1, 1, "Custom Sheet");
-  importList("https://docs.google.com/spreadsheets/d/1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4/edit#gid=0", 1, 1, "Master Sheet");
-}
 
 function getLastDataCol(sheet) {
   var lastCol = sheet.getLastColumn();
