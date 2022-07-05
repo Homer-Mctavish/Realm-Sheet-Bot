@@ -1,10 +1,3 @@
-function setImportRange(url, iD, sheetName){
-  let sheeto = activeSpreadSheet.getSheetByName(sheetName);
-  const importation = SpreadsheetApp.openById(iD); 
-  let lastRow = getLastDataRow(importation);
-  var isit = sheeto.getRange("A1").setFormula('=IMPORTRANGE("'+url+'","items!A1:E'+lastRow+'")');
-}
-
 function showSidebar() {
   var html = HtmlService.createHtmlOutputFromFile('dataform')
     .setTitle('Estimator Robot');
@@ -128,74 +121,86 @@ function queryASpreadsheet(sheetId, sheetName, queryString) {
   return arr;
 }
 
-//SpreadsheetApp.getActiveSpreadsheet().toast('here can be a message that pops up when you run the function or whatever it is');
-
-// function testRange(){
-//   setImportRange("https://docs.google.com/spreadsheets/d/1gZvsAIcLfsbiCG0--cDgkl5wqx4X-8L2Zpf-6FGFyWY/edit#gid=0","1gZvsAIcLfsbiCG0--cDgkl5wqx4X-8L2Zpf-6FGFyWY", "Copy of Item Import")
-// }
-
-
-var dateofexecution;
-var newinfo = activeSpreadSheet.getSheetByName("Copy of Item Import").getRange("C2:C").getValues();
-
-function dataExecutionState(scannedsheet){
-  let refresher = SpreadsheetApp.DataExecutionStatus.getLastRefreshedTime();
-  if (refresher !== dateofexecution){
-    let hal = scannedsheet.getRange("C2:C").getValues();
-    let intersect = hal.filter(function(obj) { return newinfo.indexOf(obj) == -1; });
-    newinfo = hal;
-    dateofexecution = refresher;
-    return intersect;
-  }else{
-    return "no recent changes";
-  }
+function difference(setA, setB) {
+    let _difference = new Set(setA)
+    for (let elem of setB) {
+        _difference.delete(elem)
+    }
+    return [..._difference]
 }
 
+function findRow(searchVal) {
+  let sheet = activeSpreadSheet.getSheetByName("Copy of Item Import");
+  let data = sheet.getDataRange().getValues();
+  let columnCount = sheet.getDataRange().getLastColumn();
+
+  let i = data.flat().indexOf(searchVal);
+  let columnIndex = i % columnCount;
+  let rowIndex = ((i - columnIndex) / columnCount);
+
+  Logger.log({columnIndex, rowIndex }); // zero based row and column indexes of searchVal
+
+  return i >= 0 ? rowIndex + 1 : "searchVal not found";
+}
+
+//var priorSheet = SpreadsheetApp.openById("1gZvsAIcLfsbiCG0--cDgkl5wqx4X-8L2Zpf-6FGFyWY");
+
+function copyNew(e){
+  let oldValue = e.oldValue;
+  SpreadsheetApp.getActiveSheet().toast("old value: "+oldValue, "",40);  
+}
+
+// function createTrigger() {
+//   ScriptApp.newTrigger('copyNew')
+//     .forSpreadsheet('1gZvsAIcLfsbiCG0--cDgkl5wqx4X-8L2Zpf-6FGFyWY')
+//     .onEdit()
+//     .create();
+// }
+
+// function onEdit(e) {
+//   let oldValue = e.oldValue;
+//   let newValue = e.value;
+//   SpreadsheetApp.getActiveSpreadsheet().toast("old value: "+oldValue, "",40);
+//   //activeSpreadSheet.getSheetByName("Copy of Item Import").getRange("F32").setValue("The range's old value was: " + oldValue + ", and the updated value is: " + newValue);
+// }
+
+function onTest(){
+  SpreadsheetApp.getActiveSpreadsheet().toast("old value: rg");
+}
 
 function testRange(){
-  // dataExecutionState(activeSpreadSheet.getSheetByName("Copy of Item Import"));
-  let varer = SpreadsheetApp.getActiveSpreadsheet
-  return SpreadsheetApp.DataExecutionStatus;
+  // let currentCost = activeSpreadSheet.getSheetByName("Copy of Item Import").getRange("C2:C").getValues().flat();
+  // let currentSet = copyNew();
+  // let oldSet = new Set(currentCost);
+  // let diff = difference(currentSet, oldSet);
+  // let info = [];
+  // diff.forEach(elem =>{
+  //   let bober = "Changed Element: "+elem+" at row: "+findRow(elem);
+  //   info.push(bober);
 
+  // });
+  // return info;
+    ScriptApp.newTrigger('onTest')
+    .forSpreadsheet('1gZvsAIcLfsbiCG0--cDgkl5wqx4X-8L2Zpf-6FGFyWY')
+    .onEdit()
+    .create();
 }
 
-// Add data source with query parameter.
-// function addDataSource() {
-//   SpreadsheetApp.DataExecutionStatus.getLastRefreshedTime()
-//   SpreadsheetApp.enableBigQueryExecution();
-//   let spreadsheet = SpreadsheetApp.getActive();
+function returneo(){
+  let ss = SpreadsheetApp.getActiveSpreadsheet().getId();
+  let query = "SELECT A WHERE A IS NOT NULL ";
+  let hur = queryASpreadsheet("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4", "BOM", query);
+  const dur = queryASpreadsheet(ss, "BOM", query); 
+  const hurdur = hur.concat(dur)
+  return hurdur;
+}
 
-//   // Add a new sheet and use A1 cell as the parameter cell.
-//   let parameterCell = spreadsheet.insertSheet('parameterSheet').getRange('A1');
-//   parameterCell.setValue('Duke');
-
-//   // Add data source with query parameter.
-//   let dataSourceSpec = SpreadsheetApp.newDataSourceSpec()
-//       .asBigQuery()
-//       .setProjectId('<YOUR_PROJECT_ID>')
-//       .setRawQuery('select * from `bigquery-public-data`.`ncaa_basketball`.`mbb_historical_tournament_games` WHERE win_school_ncaa = @SCHOOL')
-//       .setParameterFromCell('SCHOOL', 'parameterSheet!A1')
-//       .build();
-//   var dataSourceSheet = spreadsheet.insertDataSourceSheet(dataSourceSpec);
-//   dataSourceSheet.asSheet().setName('ncaa_data');
-//   dataSourceSheet.getStatus()
-// }
-
-// // Function used to configure event trigger to refresh data source sheet.
-// function refreshOnParameterEdit(e) {
-//   var editedRange = e.range;
-// if (editedRange.getSheet().getName() != 'parameterSheet') {
-//   return;
-// }
-// // Check that the edited range includes A1.
-// if (editedRange.getRow() > 1 || editedRange.getColumn() > 1) {
-//    return;
-// }
-
-//   var spreadsheet = e.source;
-//   SpreadsheetApp.enableBigQueryExecution();
-//   spreadsheet.getSheetByName('ncaa_data').asDataSourceSheet().refreshData();
-// }
+function setImportRange(url, iD, sheetName){
+  let sheeto = activeSpreadSheet.getSheetByName(sheetName);
+  const importation = SpreadsheetApp.openById(iD); 
+  let lastRow = getLastDataRow(importation);
+  var isit = sheeto.getRange("A1").setFormula('=IMPORTRANGE("'+url+'","items!A1:E'+lastRow+'")');
+  }
 
 function onlyNumbers(array) {
   return array.every(element => {
@@ -329,16 +334,6 @@ function addBOMtoTemplate() {
   }
 }
 
-function returneo(){
-  let ss = SpreadsheetApp.getActiveSpreadsheet().getId();
-  let query = "SELECT A WHERE A IS NOT NULL ";
-  let hur = queryASpreadsheet("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4", "BOM", query);
-  const dur = queryASpreadsheet(ss, "BOM", query); 
-  const hurdur = hur.concat(dur)
-  return hurdur;
-}
-
-//end add
 function openDialog() {
   var html = HtmlService.createTemplateFromFile('dataform')
     .evaluate();
@@ -477,27 +472,6 @@ function querySearch(v, scol, wcol, sheetName){
     return vlook[0];
 }
 
-// function NoteE() {
-  
-//   // get spreadsheet
-//   var ss = SpreadsheetApp.getActiveSpreadsheet();
-//   var sheet = ss.getSheetByName('Copy of Internal');
-  
-//   // get active cell
-//   var activeCell = sheet.getActiveCell();
-  
-//   // get any existing cell value
-//   var currentCellValue = activeCell.getValue();
-//   Logger.log('Current cell value is: ' + currentCellValue);
-  
-//   // get any existing cell Note
-//   var currentCellNote = activeCell.getNote();
-//   Logger.log('Current Note contains: ' + currentCellNote);
-  
-//   // set Note on the edited cell with above information
-//   activeCell.setNote('Last modified: ' + new Date() + '\n' + 'Cell value: ' + "'" + currentCellValue + "'" + '\n\n' + currentCellNote);
-  
-// }
 
 /**
  * Searches a column for a passed columns' values from active sheet in another sheet. 
@@ -592,7 +566,7 @@ function craaazy(z){
   return combined;
 }
 
-//note that row[mul1] where mul1=0 is valRs' first row values. for D2:G it represents D2:D. row[mul2] where mul2=3 is G2:G.
+
 function multo(sheet, valR, setR, mul1, mul2){
   var sheet = activeSpreadSheet.getSheetByName(sheet);
   var data = sheet.getRange(valR).getValues();
