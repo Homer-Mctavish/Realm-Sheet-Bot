@@ -30,7 +30,7 @@ function findRow(searchVal) {
 
 function updeeat(e) {
   //let rangp = findRow(e.value);
-  SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1FSyukC97LQ8MCEvbTlrZojJF-UiFdQaZM7PGr5Ky9dQ/edit#gid=1147878197").getSheetByName("Copy of Item Import").getRange("F"+findRow(e.value)).setValue(e.value);
+  SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1FSyukC97LQ8MCEvbTlrZojJF-UiFdQaZM7PGr5Ky9dQ/edit#gid=1147878197").getSheetByName("Copy of Item Import").getRange("F"+findRow(e.value)).setValue("old price: "+e.oldValue);
 }
 
 function createSpreadsheetEditTrigger() {
