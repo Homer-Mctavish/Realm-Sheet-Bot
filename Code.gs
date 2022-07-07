@@ -1,5 +1,5 @@
-//https://mashe.hawksey.info/2018/02/google-apps-script-patterns-writing-rows-of-data-to-google-sheets/
 
+// https://mashe.hawksey.info/2018/02/google-apps-script-patterns-writing-rows-of-data-to-google-sheets/
 
 function onOpen() {
     SpreadsheetApp.getUi() // Or DocumentApp or FormApp.
@@ -8,11 +8,21 @@ function onOpen() {
         .addItem('Set Row Colors & Sort', 'setRowColors')
         .addItem('Speaker Verification','createSpeakerVerification')
         .addItem('Delete Rows','deleteAllRows')
+        .addItem('Show Pull sidebar', 'showSidebar')
         .addToUi();
 }
 
+
+function showSidebar() {
+  let html = HtmlService.createHtmlOutputFromFile('testSheet')
+    .setTitle('Pull Schedule Automata');
+    SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
+    .showSidebar(html);
+}
+
+
 function onEdit(event) {
-     var sheetName = 'Speaker Verification',
+     let sheetName = 'Speaker Verification',
          watchCol = [1], 
          stampCol = [9],
          userCol = [8],
@@ -42,7 +52,7 @@ function onEdit(event) {
 
 function createSpeakerVerification(){
 req = "=query('Pull Schedule'!C9:G, \"select * where G = '16/4 SPEAKER WIRE'\")";
-var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Speaker Verification');
+let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Speaker Verification');
 
 queryCell = sheet.getRange(2,3);
 queryCell.setValue(req);
@@ -52,15 +62,13 @@ sheetData = sheet.getDataRange().getValues();
 destination = sheet.getRange(1,1,sheetData.length,sheetData[0].length);
 destination.setValues(sheetData);
 
-
 }
-
 
 
 function deleteAllRows(){
 
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pull Schedule");
-  var rowCount = sheet.getMaxRows();
+  let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pull Schedule");
+  let rowCount = sheet.getMaxRows();
   Logger.log(rowCount);
   if(rowCount >9){
   sheet.deleteRows(9, rowCount-9);
@@ -69,33 +77,33 @@ function deleteAllRows(){
 }
 
 function processXLSsheet(){
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary");
-  var sheet2 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import");
-  var sheetLastRow = sheet.getLastRow();
-  var dataValues1 = sheet.getRange(2,3,sheetLastRow).getValues();
-  var dataValues2 = sheet.getRange(2,4,sheetLastRow).getValues();
-  var dataValues3 = sheet.getRange(2,2,sheetLastRow).getValues();
-  var combined = [];
-  var pullTypes = [];
+  let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary");
+  let sheet2 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import");
+  let sheetLastRow = sheet.getLastRow();
+  let dataValues1 = sheet.getRange(2,3,sheetLastRow).getValues();
+  let dataValues2 = sheet.getRange(2,4,sheetLastRow).getValues();
+  let dataValues3 = sheet.getRange(2,2,sheetLastRow).getValues();
+  let combined = [];
+  let pullTypes = [];
   
-  for(var i=0; i<sheetLastRow; i++){
+  for(let i=0; i<sheetLastRow; i++){
    
     combined[i] = [dataValues1[i][0]+"."+ dataValues2[i][0]];
     pullTypes[i] = [dataValues3[i][0]];
     
   }
-  var rowcount = combined.length;
+  let rowcount = combined.length;
   sheet2.getRange(3,1,rowcount).setValues(combined);
   sheet2.getRange(3,2,rowcount).setValues(pullTypes);
   
-}
-  
+};
+
 
 function sortRows(){
-  var sheet =  SpreadsheetApp.getActiveSheet();
+  let sheet =  SpreadsheetApp.getActiveSheet();
   sheet.setFrozenRows(8);
-  var sheetLastRow = sheet.getLastRow();
-  var sortrange = sheet.getRange("A9:" + sheetLastRow);
+  let sheetLastRow = sheet.getLastRow();
+  let sortrange = sheet.getRange("A9:" + sheetLastRow);
   sortrange.sort([{column: 4, ascending: true}, {column: 6, ascending: true}])
 }
 
@@ -106,53 +114,53 @@ function runCreatePullSchedule() {
   
     //we need to loop through a sheet that has tag number and wire type. Then we will add to the current Pull Shedule sheet the wire number, Wire type and wire orgin/destination.
     //we will extract the room names wire labels and type from Data Import Sheet. Need to figure out easy way for data import sheet to populate names of rooms.
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var app = SpreadsheetApp.getUi();
-    var pullScheduleSheet = ss.getSheetByName("Pull Schedule");
-    var dataSetSheet = ss.getSheetByName("Data Set");
-    var dataImportSheet = ss.getSheetByName("Data Import");
+    let ss = SpreadsheetApp.getActiveSpreadsheet();
+    let app = SpreadsheetApp.getUi();
+    let pullScheduleSheet = ss.getSheetByName("Pull Schedule");
+    let dataSetSheet = ss.getSheetByName("Data Set");
+    let dataImportSheet = ss.getSheetByName("Data Import");
 
     //Lets get our data from Data import Sheet and Data Set sheet 
-    var dataImportLastRow = dataImportSheet.getLastRow() + 1;
-    var dataImportValues = dataImportSheet.getRange("A2:" + "C" + dataImportLastRow).getValues();
-    var dataImportRoomNames = dataImportSheet.getRange("G3:" + "H" + dataImportLastRow).getValues();
-    var originName = dataImportSheet.getRange("g3").getValue();
-    var originRoomNum = dataImportSheet.getRange("h3").getValue();
-    var dataSetLastRow = dataSetSheet.getLastRow() + 1;
-    var dataSetLastColumn = dataSetSheet.getLastColumn() + 1;
-    var dataSetValues = dataSetSheet.getRange("A2:" + "Z" + dataSetLastRow).getValues();
-    var insertValues = [];
+    let dataImportLastRow = dataImportSheet.getLastRow() + 1;
+    let dataImportValues = dataImportSheet.getRange("A2:" + "C" + dataImportLastRow).getValues();
+    let dataImportRoomNames = dataImportSheet.getRange("G3:" + "H" + dataImportLastRow).getValues();
+    let originName = dataImportSheet.getRange("g3").getValue();
+    let originRoomNum = dataImportSheet.getRange("h3").getValue();
+    let dataSetLastRow = dataSetSheet.getLastRow() + 1;
+    let dataSetLastColumn = dataSetSheet.getLastColumn() + 1;
+    let dataSetValues = dataSetSheet.getRange("A2:" + "Z" + dataSetLastRow).getValues();
+    let insertValues = [];
   
 //DOCUMENT THIS BETTER THIS NOT WORKING RIGHT. TV appears out of nowhere for some reason???
   // we are going to loop through the "Data Import" sheet  
-  for (var i = 0; i < (dataImportLastRow - 1); i++) {
+  for (let i = 0; i < (dataImportLastRow - 1); i++) {
 
-          var dataImportTagNumber = dataImportValues[i][0];
-          var dataImportPullType =  dataImportValues[i][1]; 
-          var destinatainName =  dataImportValues[i][2]; 
-          var dataImportTagNumberSplit =  dataImportTagNumber.toString();
+          let dataImportTagNumber = dataImportValues[i][0];
+          let dataImportPullType =  dataImportValues[i][1]; 
+          let destinatainName =  dataImportValues[i][2]; 
+          let dataImportTagNumberSplit =  dataImportTagNumber.toString();
     
-          var destinationRoomNumber = dataImportTagNumberSplit.split(".")[0];
+          let destinationRoomNumber = dataImportTagNumberSplit.split(".")[0];
           Logger.log(destinationRoomNumber);
         // now lets loop through "Data Set" to match up column B in Data Import sheet (TV, SPK etc) with Column A in "Data Set" Sheet
-        for (var ii = 0; ii < (dataSetLastRow - 1); ii++) {
-              var dataSetPullType = dataSetValues[ii][0];
+        for (let ii = 0; ii < (dataSetLastRow - 1); ii++) {
+              let dataSetPullType = dataSetValues[ii][0];
              //If we find a match we can move forward. 
             if (dataImportPullType === dataSetPullType) {
          
                 //Now we will loop through the columns of "Data Set" We need to skip B because that has our wire category i.i Flat Panel, Wireless Access Point 
-                var alphaDes = '';
-                for (var iii = 2; iii < (dataSetLastColumn - 1); iii++) {
+                let alphaDes = '';
+                for (let iii = 2; iii < (dataSetLastColumn - 1); iii++) {
                     //make sure cell isn't empty before moving on
                     if (dataSetValues[ii][iii]) {
                         //Wire #	Wire Type	Wire Origin	Wire Destination	Comments
                       //new order should be Origin, Origin Room #, Destination, Destination Room Number, Destination Description, Cable Number, Wire Type
                         alphaDes = nextString(alphaDes);
-                        var destinationDesc = dataSetValues[ii][1];
-                        var wireCategory = dataSetPullType;
-                        var wireNumber = dataImportTagNumber + alphaDes;
-                        var wireType = dataSetValues[ii][iii];
-                        var wireComment =  dataSetValues[ii][13]
+                        let destinationDesc = dataSetValues[ii][1];
+                        let wireCategory = dataSetPullType;
+                        let wireNumber = dataImportTagNumber + alphaDes;
+                        let wireType = dataSetValues[ii][iii];
+                        let wireComment =  dataSetValues[ii][13]
                         Logger.log(wireCategory + "-" + wireNumber + " " + wireType);
                         insertValues.push([originName,originRoomNum,destinatainName, destinationRoomNumber, destinationDesc, wireCategory + "-" + wireNumber, wireType, wireComment]);
                     }  
@@ -161,59 +169,15 @@ function runCreatePullSchedule() {
             } else {
                        
              // app.alert("Did Not Find").CLOSE;
-}
-                     
+              }            
         }
-
-        
-       
     }
-    var range = pullScheduleSheet.getRange(pullScheduleSheet.getLastRow()+1, 1, insertValues.length, insertValues[0].length);
-    var changeRange = pullScheduleSheet.getRange(pullScheduleSheet.getLastRow()+1,1,insertValues.length,pullScheduleSheet.getLastColumn());
+    let range = pullScheduleSheet.getRange(pullScheduleSheet.getLastRow()+1, 1, insertValues.length, insertValues[0].length);
+    let changeRange = pullScheduleSheet.getRange(pullScheduleSheet.getLastRow()+1,1,insertValues.length,pullScheduleSheet.getLastColumn());
     range.setValues(insertValues);
     changeRange.setBackgroundRGB(255, 255, 255);
     changeRange.setFontSize(12);
     changeRange.setFontFamily("Share Tech Mono");
-  
-
-}
-
-//not a working function. doing this outside of scripting now. 
-function addRoomNames(){
-  
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var app = SpreadsheetApp.getUi();
-    var dataImportSheet = ss.getSheetByName("Data Import");
-    var dataImportRoomNames = dataImportSheet.getRange("G3:" + "H" + dataImportLastRow).getValues();
-  
-                //////THIS IS WHERE TROUBLE STARTS we should change 50 to actual number of rooms. Should loop through this first and update cells in dataimport then just take the column
-              
-              //now lets get the destination name
-
-              for (var di = 0; di < 25; di++) { 
-                var roomNumber = dataImportRoomNames[di][0].toString();
-                Logger.log("*********");
-              Logger.log(roomNumber);
-              Logger.log(destinationRoomNumber);
-              Logger.log("*********");
-                
-                if(destinationRoomNumber === roomNumber ){
-                  
-                  var destinatinName = dataImportRoomNames[di][1];
-                  Logger.log("*********");
-                  Logger.log("*********");
-                  Logger.log("*********");
-                  Logger.log(destinatinName);
-                  Logger.log("*********");
-                  Logger.log("*********");
-                  Logger.log("*********");
-                  
-                  
-                } 
-              } 
-              
-              ////IT SHOULD END HERE. THE TROUBLE THAT IS.
-  
 }
 
 
@@ -223,9 +187,9 @@ function nextString(str) {
     if (!str)
         return 'A'; // return 'A' if str is empty or null
 
-    var tail = '';
-    var i = str.length - 1;
-    var char = str[i];
+    let tail = '';
+    let i = str.length - 1;
+    let char = str[i];
     // find the index of the first character from the right that is not a 'Z'
     while (char === 'Z' && i > 0) {
         i--;
@@ -240,14 +204,14 @@ function nextString(str) {
 
 
 function formatText() {
-    var range1 = pullScheduleSheet.getRange("C5:E5");
+    let range1 = pullScheduleSheet.getRange("C5:E5");
     range1.mergeAcross();
     range1.setHorizontalAlignment("center");
     range1.setVerticalAlignment("middle");
     range1.setBackgroundRGB(169, 169, 169);
     range1.setBorder(true, true, true, true, false, false, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
     range1.setFontWeight("bold");
-    var fontSizes = [
+    let fontSizes = [
         [44, 46, 48]
     ];
 
@@ -259,20 +223,20 @@ function formatText() {
 
 function setRowColors() {
   sortRows();
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheets()[0];
-  var range = sheet.getDataRange();
+  let ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheets()[0];
+  let range = sheet.getDataRange();
   
-  var lRow = sheet.getLastRow();
-  var headerRows = 8;
-  var numRows = lRow - headerRows;
-  var numCols = sheet.getLastColumn();
-  var [rows1d, cols1d] = [numRows, numCols].map(function(num){ 
+  let lRow = sheet.getLastRow();
+  let headerRows = 8;
+  let numRows = lRow - headerRows;
+  let numCols = sheet.getLastColumn();
+  let [rows1d, cols1d] = [numRows, numCols].map(function(num){ 
     return Array.apply([],new Array(num)); //or just `getBackgrounds()` to get a 2d array 
   })
   
-  var colors2d = rows1d.map(function(row, i){
-    var color = i%2 === 0 ? "#ffffff" : "#efefef";
+  let colors2d = rows1d.map(function(row, i){
+    let color = i%2 === 0 ? "#ffffff" : "#efefef";
     return cols1d.map(function(col){
         return color;
     })
@@ -285,19 +249,19 @@ function setRowColors() {
 
 
 function setCellColors() {  
-  var range = SpreadsheetApp.getActiveSheet().getDataRange();
+  let range = SpreadsheetApp.getActiveSheet().getDataRange();
   
   //lets find Lutron and Power in Column G and set background color to yellow and red
 
-    var gi = 0;
+    let gi = 0;
   
   // we set every other row white or grey
-  for (var i = range.getRow()+7; i < range.getLastRow(); i++) {
-    var rowRow = i +1;
-    var pullScheduleSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pull Schedule");
-  //  var pullScheduleSheet = ss.getSheetName("Pull Schedule");
-    var pullScheduleLastRow = pullScheduleSheet.getLastRow() + 1;
-    var pullScheduleValues = pullScheduleSheet.getRange("G9:" + "G" + pullScheduleLastRow).getValues();
+  for (let i = range.getRow()+7; i < range.getLastRow(); i++) {
+    let rowRow = i +1;
+    let pullScheduleSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pull Schedule");
+  //  let pullScheduleSheet = ss.getSheetName("Pull Schedule");
+    let pullScheduleLastRow = pullScheduleSheet.getLastRow() + 1;
+    let pullScheduleValues = pullScheduleSheet.getRange("G9:" + "G" + pullScheduleLastRow).getValues();
 
   if (pullScheduleValues[gi][0] == "Lutron QSC" || pullScheduleValues[gi][0] == "Lutron Yellow" || pullScheduleValues[gi][0] == "LUTRON QSC" || pullScheduleValues[gi][0] == "LUTRON YELLOW"){
     pullScheduleSheet.getRange("G"+rowRow).setBackgroundColor('#fff187');
@@ -314,18 +278,27 @@ function setCellColors() {
   }
   }
 
-// const deepGet = (obj, keys) =>
+//v6 version in case the rest of the shit breaks
+// const deepGet = function(obj, keys) {
 //   keys.reduce(
-//     (xs, x) => (xs && xs[x] !== null && xs[x] !== undefined ? xs[x] : null),
+//     function(xs, x){ (xs && xs[x] !== null && xs[x] !== undefined ? xs[x] : null)},
 //     obj
 //   );
+// };
 
+const deepGet = (obj, keys) =>
+  keys.reduce(
+    (xs, x) => (xs && xs[x] !== null && xs[x] !== undefined ? xs[x] : null),
+    obj
+  );
+
+//v6 version in case the rest of the shit breaks
 // //sheetId, sheetName, queryString
 // function queryASpreadsheet(sheetId, sheetName, queryString) {
 //  var url = 'https://docs.google.com/spreadsheets/d/'+sheetId+'/gviz/tq?'+
 //             'sheet='+sheetName+
 //             '&tq=' + encodeURIComponent(queryString);
-//   var params = {
+//   let params = {
 //     headers: {
 //       'Authorization': 'Bearer ' + ScriptApp.getOAuthToken()
 //     },
@@ -335,29 +308,134 @@ function setCellColors() {
 //   var k = JSON.parse(ret.replace("/*O_o*/", "").replace("google.visualization.Query.setResponse(", "").slice(0, -2));
 //   var depp = deepGet(k, ['table','rows']);
 //   var arr = [];
-//   depp.forEach(column=>{
+//   depp.forEach(function(column){
 //     arr.push(JSON.stringify(column['c'][0].v))
 //   });
 //   return arr;
-// }
+// };
 
-//   function queryImport(){
-//     const items = queryASpreadsheet("1iNOyqZuLorKOO3qOctOD6QfqJYeuvuXK9I_AkO4hh2o", "Data Import", 'SELECT E WHERE E IS NOT NULL'), gamer = items.map(function(item) {
-//     return item.toString();
-//     });
-//     let final = [];
-//     gamer.forEach(item =>{
-//       let gobi =queryASpreadsheet("1iNOyqZuLorKOO3qOctOD6QfqJYeuvuXK9I_AkO4hh2o", "Rooms and Numbers", "SELECT B WHERE A MATCHES "+item);
-//       final.push(gobi);
-//     });
-//     return final;
-//   };   
+//sheetId, sheetName, queryString
+function queryASpreadsheet(sheetId, sheetName, queryString) {
+ let url = 'https://docs.google.com/spreadsheets/d/'+sheetId+'/gviz/tq?'+
+            'sheet='+sheetName+
+            '&tq=' + encodeURIComponent(queryString);
+  let params = {
+    headers: {
+      'Authorization': 'Bearer ' + ScriptApp.getOAuthToken()
+    },
+    muteHttpExceptions: true
+  };
+  let ret  = UrlFetchApp.fetch(url, params).getContentText();
+  let k = JSON.parse(ret.replace("/*O_o*/", "").replace("google.visualization.Query.setResponse(", "").slice(0, -2));
+  let depp = deepGet(k, ['table','rows']);
+  let arr = [];
+  depp.forEach(column=>{
+    arr.push(JSON.stringify(column['c'][0].v))
+  });
+  return arr;
+}
 
-// function grabvals(){
-//   //make it detect the name of the first sheet (so that "Summary" is replaced with whatever) and the second sheet ("Summary" but it has (number) where number should ideally be 1 because you delete the other sheet after the comparisons are obtained)
-//   let old = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary");
-//   let ew = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary(1)");
-//   old.getDataRange().getValues().flat();
-//   ew.getDataRange().getValues().flat();
-//   let oldSet = new
-// }
+function queryASpreadsheet2(sheetId, sheetName, queryString) {
+ var url = 'https://docs.google.com/spreadsheets/d/'+sheetId+'/gviz/tq?'+
+            'sheet='+sheetName+
+            '&tqx=out:csv' +
+            '&tq=' + encodeURIComponent(queryString);
+  var params = {
+    headers: {
+      'Authorization': 'Bearer ' + ScriptApp.getOAuthToken()
+    },
+    muteHttpExceptions: true
+  };
+  let csvData   = UrlFetchApp.fetch(url, params);
+  let dataTwoD  = Utilities.parseCsv(csvData);// array of the format [[a, b, c], [d, e, f]] where [a, b, c] is a row and b is a value
+  return dataTwoD;
+}
+
+function getLastDataRow(sheet) {
+  var lastRow = sheet.getLastRow();
+  var range = sheet.getRange("A" + lastRow);
+  if (range.getValue() !== "") {
+    return lastRow;
+  } else {
+    return range.getNextDataCell(SpreadsheetApp.Direction.UP).getRow();
+  }              
+}
+
+Array.prototype.find = function(regex) {
+  const arr = this;
+  const matches = arr.filter( function(e) { return regex.test(e); } );
+  return matches.map(function(e) { return arr.indexOf(e); } );
+};
+
+  function queryImport(){
+    let vab = queryASpreadsheet2("1iNOyqZuLorKOO3qOctOD6QfqJYeuvuXK9I_AkO4hh2o", "Rooms and Numbers", 'SELECT A, B WHERE B IS NOT NULL');
+  // let data = theRange.find( /^\d+$/).map(x=>x+2);
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import").getRange("O3:P"+(vab.length+2)).setValues(vab);
+  };   
+
+function addendum(smort, ramora, setback, p1, p2,p3){
+  let joke = activeSpreadSheet.getSheetByName(smort);
+  let elf = joke.getRange(ramora).getValues();
+  let newData = [];
+  for (i in elf){
+    let row = elf[i];
+    let addo =row[p1]+row[p2]+row[p3];
+    newData.push([addo]);
+  }
+  joke.getRange(setback).setValues(newData);
+
+}
+
+      function getLetter(num){
+      var letter = String.fromCharCode(num + 64);
+      return letter;
+    }
+
+//what is required is a method to determine missing values from two different sheets
+
+function compori(arr, arrd){
+  if(arr.length>arrd.length){
+    return arr;
+  }else{
+    return arrd;
+  }
+}
+
+function comprol(arr, arrd){
+  if(arr.length<arrd.length){
+    return arr;
+  }else{
+    return arrd;
+  }
+}
+//
+function grabvals(){
+  //make it detect the name of the first sheet (so that "Summary" is replaced with whatever) and the second sheet ("Summary" but it has (number) where number should ideally be 1 because you delete the other sheet after the comparisons are obtained)
+  let old = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary");
+  let ew = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary (1)");
+  let arr2 = old.getDataRange().getValues();
+  let arr1 = ew.getDataRange().getValues();
+  let data = [];
+  //let difference = arr1.filter(x => !arr2.includes(x)).concat(arr2.filter(x => !arr1.includes(x))).filter(String);
+  if(arr1.length!==arr2.length){
+    let theWinner = compori(arr1, arr2);
+    let theLoser = comprol(arr2, arr1);
+    try{
+    theWinner.forEach((k, i)=>{
+      if(Array.from(k).toString()!==Array.from(theLoser[i]).toString()){
+        data.push("["+k+"]");
+      }
+    }); 
+    return data;
+    }catch(err){
+      return "an error!: "+err.message;
+    }
+  }else{
+        arr1.forEach((k, i)=>{
+      if(k.sort().toString() !== arr2[i].sort().toString()){
+        data.push("["+k+"]");
+      }
+    }); 
+  }
+  return data;
+}
