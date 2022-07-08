@@ -391,8 +391,6 @@ function addendum(smort, ramora, setback, p1, p2,p3){
       return letter;
     }
 
-//what is required is a method to determine missing values from two different sheets
-
 function compori(arr, arrd){
   if(arr.length>arrd.length){
     return arr;
@@ -408,34 +406,34 @@ function comprol(arr, arrd){
     return arrd;
   }
 }
-//
+
 function grabvals(){
   //make it detect the name of the first sheet (so that "Summary" is replaced with whatever) and the second sheet ("Summary" but it has (number) where number should ideally be 1 because you delete the other sheet after the comparisons are obtained)
-  let old = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary");
-  let ew = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary (1)");
-  let arr2 = old.getDataRange().getValues();
-  let arr1 = ew.getDataRange().getValues();
+  let oldSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary");
+  let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary (1)");
+  let oldOne = oldSheet.getRange("A2:D"+getLastDataRow(oldSheet)).getValues();
+  let newOne = newSheet.getRange("A2:D"+getLastDataRow(newSheet)).getValues();
   let data = [];
-  //let difference = arr1.filter(x => !arr2.includes(x)).concat(arr2.filter(x => !arr1.includes(x))).filter(String);
-  if(arr1.length!==arr2.length){
-    let theWinner = compori(arr1, arr2);
-    let theLoser = comprol(arr2, arr1);
-    try{
-    theWinner.forEach((k, i)=>{
-      if(Array.from(k).toString()!==Array.from(theLoser[i]).toString()){
-        data.push("["+k+"]");
+  // let bogep = [];
+  if(oldOne.length!==newOne.length){
+
+  } else{    
+    let stringOfNew = newOne.map(x => x.toString());
+    oldOne.forEach(army =>{
+      if(stringOfNew.indexOf(army.toString())===-1){
+        data.push("["+army+"]");
       }
-    }); 
-    return data;
-    }catch(err){
-      return "an error!: "+err.message;
-    }
-  }else{
-        arr1.forEach((k, i)=>{
-      if(k.sort().toString() !== arr2[i].sort().toString()){
-        data.push("["+k+"]");
-      }
-    }); 
+    });
+    let puller = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pull Schedule")
+    var lastRow = getLastDataRow(puller);
+    var counter = 0;
+    data.forEach(item =>{
+      puller.getRange("F"+lastRow).setValue(data[counter][3]);
+      puller.getRange("D"+lastRow).setValue(data[counter][2]);
+      puller.getRange("E"+lastRow).setValue(data[counter][1]);
+      counter = counter+1;
+      lastRow = lastRow+1;
+    });
   }
   return data;
 }
