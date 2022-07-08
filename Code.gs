@@ -411,10 +411,11 @@ function grabvals(){
   //make it detect the name of the first sheet (so that "Summary" is replaced with whatever) and the second sheet ("Summary" but it has (number) where number should ideally be 1 because you delete the other sheet after the comparisons are obtained)
   let oldSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary");
   let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary (1)");
+  let puller = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pull Schedule");
   let oldOne = oldSheet.getRange("A2:D"+getLastDataRow(oldSheet)).getValues();
   let newOne = newSheet.getRange("A2:D"+getLastDataRow(newSheet)).getValues();
   let data = [];
-  // let bogep = [];
+  let nfo = [];
   if(oldOne.length!==newOne.length){
 
   } else{    
@@ -424,16 +425,34 @@ function grabvals(){
         data.push("["+army+"]");
       }
     });
-    let puller = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pull Schedule")
-    var lastRow = getLastDataRow(puller);
-    var counter = 0;
-    data.forEach(item =>{
-      puller.getRange("F"+lastRow).setValue(data[counter][3]);
-      puller.getRange("D"+lastRow).setValue(data[counter][2]);
-      puller.getRange("E"+lastRow).setValue(data[counter][1]);
-      counter = counter+1;
-      lastRow = lastRow+1;
+    let stringOfOld = oldOne.map(x => x.toString());
+    newOne.forEach(lbo =>{
+      if(stringOfOld.indexOf(lbo.toString())===-1){
+        nfo.push(lbo);
+      }
     });
+
+    var lastRow = getLastDataRow(puller);
+    let arrAy = puller.getRange("D9:G994").getValues();
+    let bob = arrAy.map(x => x.toString());
+    let formofdata = [];
+    arrAy.forEach(itoo => {
+      if(data.indexOf(itoo.toString())===-1){
+        formofdata.push(itoo);
+      }
+    });
+
+    puller.getRange("D9:G994").setValues(formofdata);
+    
+    // var counter = 0;
+    // data.forEach(item =>{
+    //   puller.getRange("F"+lastRow).setValue(data[counter][3]);
+    //   puller.getRange("D"+lastRow).setValue(data[counter][2]);
+    //   puller.getRange("E"+lastRow).setValue(data[counter][1]);
+    //   counter = counter+1;
+    //   lastRow = lastRow+1;
+    // });
+  return formofdata;
   }
-  return data;
+  //return bob;
 }
