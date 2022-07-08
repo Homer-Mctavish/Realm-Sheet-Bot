@@ -16,10 +16,10 @@ function onOpen() {
 
 function findRow(searchVal) {
   let sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  let data = sheet.getDataRange().getValues();
+  let mata = sheet.getDataRange().getValues();
   let columnCount = sheet.getDataRange().getLastColumn();
-
-  let i = data.flat().indexOf(searchVal);
+  let data = mata.flat().map(x => x.toString());
+  let i = data.indexOf(searchVal);
   let columnIndex = i % columnCount;
   let rowIndex = ((i - columnIndex) / columnCount);
 
