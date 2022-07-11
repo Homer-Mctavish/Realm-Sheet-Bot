@@ -1,6 +1,9 @@
 
 // https://mashe.hawksey.info/2018/02/google-apps-script-patterns-writing-rows-of-data-to-google-sheets/
 
+
+// https://mashe.hawksey.info/2018/02/google-apps-script-patterns-writing-rows-of-data-to-google-sheets/
+
 function onOpen() {
     SpreadsheetApp.getUi() // Or DocumentApp or FormApp.
         .createMenu('Realm Custom Scripts')
@@ -407,8 +410,53 @@ function comprol(arr, arrd){
   }
 }
 
+function fjge(jobob){
+  return jobob.replace(/^0+/, '');
+}
+
+function removeSpaces(k){
+  return k!== '';
+}
+
+function findRow(searchVal) {
+  let sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  let mata = sheet.getDataRange().getValues();
+  let columnCount = sheet.getDataRange().getLastColumn();
+  let data = mata.flat().map(x => x.toString());
+  let i = data.indexOf(searchVal);
+  let columnIndex = i % columnCount;
+  let rowIndex = ((i - columnIndex) / columnCount);
+
+  Logger.log({columnIndex, rowIndex }); // zero based row and column indexes of searchVal
+
+  return i >= 0 ? rowIndex + 1 : "searchVal not found";
+}
+
+
+
+function strikeOut() {
+  const textsForStrikethrough = ["TBD"];  // Please set the texts you want to reflect the strikethrough.
+  const sheetName = "Pull Schedule";  // Please set the sheet name.
+
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  const range = sheet.getDataRange();
+  const modify = range.getValues().reduce((ar, e, r) => {
+    e.forEach((f, c) => {
+      textsForStrikethrough.forEach(g => {
+        const idx = f.indexOf(g);
+        if (idx > -1) ar.push({start: idx, end: idx + g.length, row: r, col: c});
+      });
+    });
+    return ar;
+  }, []);
+  const textStyle = SpreadsheetApp.newTextStyle().setStrikethrough(true).build();
+  const richTextValues = range.getRichTextValues();
+  modify.forEach(({start, end, row, col}) => richTextValues[row][col] = richTextValues[row][col].copy().setTextStyle(start, end, textStyle).build());
+  range.setRichTextValues(richTextValues);
+
 function grabvals(){
   //make it detect the name of the first sheet (so that "Summary" is replaced with whatever) and the second sheet ("Summary" but it has (number) where number should ideally be 1 because you delete the other sheet after the comparisons are obtained)
+  //remember to add the edge case handlers for when one sheet is longer or shorter than the other
   let oldSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary");
   let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary (1)");
   let puller = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pull Schedule");
@@ -422,7 +470,7 @@ function grabvals(){
     let stringOfNew = newOne.map(x => x.toString());
     oldOne.forEach(army =>{
       if(stringOfNew.indexOf(army.toString())===-1){
-        data.push("["+army+"]");
+        data.push(army);
       }
     });
     let stringOfOld = oldOne.map(x => x.toString());
@@ -431,28 +479,51 @@ function grabvals(){
         nfo.push(lbo);
       }
     });
-
-    var lastRow = getLastDataRow(puller);
-    let arrAy = puller.getRange("D9:G994").getValues();
-    let bob = arrAy.map(x => x.toString());
+    let dumb = [];
+    data.forEach(argk =>{
+      dumb.push(argk.map(x => fjge(x.toString())));
+    }); 
+    let lastRow = puller.getRange("D9:994").getA1Notation();
+    let value =puller.getRange(lastRow).getValues();
+    let baloo = [];
+    value.forEach(bobert =>{
+      baloo.push(bobert.filter(x => removeSpaces(x.toString())));
+    });
+    let dumstring = dumb.map(x =>x.toString());
     let formofdata = [];
-    arrAy.forEach(itoo => {
-      if(data.indexOf(itoo.toString())===-1){
+    baloo.forEach(itoo => {
+      if(dumstring.indexOf(itoo.toString())!==-1){
         formofdata.push(itoo);
       }
     });
-
-    puller.getRange("D9:G994").setValues(formofdata);
-    
+    // const textStyle = SpreadsheetApp.newTextStyle().setStrikethrough(true).build();
+    // const richTextValues = range.getRichTextValues();
+    // modify.forEach(({start, end, row, col}) => richTextValues[row][col] = richTextValues[row][col].copy().setTextStyle(start, end, textStyle).build());
+    // let jilt = formofdata.map(x => x.toString());
+    // range.setRichTextValues(richTextValues);
+    // value.forEach(ebog =>{
+    //   if(jilt.indexOf(ebog.toString())!==-1){
+    //     let flalue = value.map(x => x.toString()).flat();
+    //     let flindex = flalue.indexOf(ebog.toString())+2;
+    //     puller.getRange()
+    //   }
+    // })
+    // the part where we add the new stuff from Summary (1) to Pull Schedule
+    // let theRl = ;
+    // puller.getRange(n) nfo   
+    //puller.getRange(lastRow).setValues(formofdata);
     // var counter = 0;
     // data.forEach(item =>{
-    //   puller.getRange("F"+lastRow).setValue(data[counter][3]);
-    //   puller.getRange("D"+lastRow).setValue(data[counter][2]);
-    //   puller.getRange("E"+lastRow).setValue(data[counter][1]);
+    //   puller.getRange("F"+lastRow).setValue(nfo[counter][3]);
+    //   puller.getRange("D"+lastRow).setValue(nfo[counter][2]);
+    //   puller.getRange("E"+lastRow).setValue(nfo[counter][1]);
     //   counter = counter+1;
     //   lastRow = lastRow+1;
-    // });
+    // }); ojos tristes
   return formofdata;
   }
   //return bob;
+}
+
+
 }
