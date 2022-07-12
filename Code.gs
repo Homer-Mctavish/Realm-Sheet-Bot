@@ -1,9 +1,6 @@
 
 // https://mashe.hawksey.info/2018/02/google-apps-script-patterns-writing-rows-of-data-to-google-sheets/
 
-
-// https://mashe.hawksey.info/2018/02/google-apps-script-patterns-writing-rows-of-data-to-google-sheets/
-
 function onOpen() {
     SpreadsheetApp.getUi() // Or DocumentApp or FormApp.
         .createMenu('Realm Custom Scripts')
@@ -376,48 +373,6 @@ Array.prototype.find = function(regex) {
     SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import").getRange("O3:P"+(vab.length+2)).setValues(vab);
   };   
 
-function addendum(smort, ramora, setback, p1, p2,p3){
-  let joke = activeSpreadSheet.getSheetByName(smort);
-  let elf = joke.getRange(ramora).getValues();
-  let newData = [];
-  for (i in elf){
-    let row = elf[i];
-    let addo =row[p1]+row[p2]+row[p3];
-    newData.push([addo]);
-  }
-  joke.getRange(setback).setValues(newData);
-
-}
-
-      function getLetter(num){
-      var letter = String.fromCharCode(num + 64);
-      return letter;
-    }
-
-function compori(arr, arrd){
-  if(arr.length>arrd.length){
-    return arr;
-  }else{
-    return arrd;
-  }
-}
-
-function comprol(arr, arrd){
-  if(arr.length<arrd.length){
-    return arr;
-  }else{
-    return arrd;
-  }
-}
-
-function fjge(jobob){
-  return jobob.replace(/^0+/, '');
-}
-
-function removeSpaces(k){
-  return k!== '';
-}
-
 function findRow(searchVal) {
   let sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   let mata = sheet.getDataRange().getValues();
@@ -432,56 +387,93 @@ function findRow(searchVal) {
   return i >= 0 ? rowIndex + 1 : "searchVal not found";
 }
 
+  function superV(){//use the findrow function from item import sheet to find row to insert the string of mog[o]
+    let vapb = queryASpreadsheet2("1iNOyqZuLorKOO3qOctOD6QfqJYeuvuXK9I_AkO4hh2o", "Rooms and Numbers", 'SELECT A, B WHERE B IS NOT NULL');
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import");
+    const shrt = sheet.getRange("E3:E").getValues().filter(String);
+    let mog = [];    
+    shrt.forEach(argk =>{
+      //"["+argk.map(x => removeZeros(x.toString()))+"]"
+      mog.push(argk.map(x => removeZeros(x.toString())));
+    });
+    let b = [];
+    mog.forEach(arrbo =>{
+      b.push(arrbo.map(x =>x.toString()));
+    });
+    var o = 0;
+    // vapb.forEach(numero => {
+    //   b.forEach(nbo =>{
+    //       if(numero.indexOf(nbo[0])!==-1){
+    //         let bindex = b.indexOf(b[o][o])+3;
+    //         sheet.getRange("F"+bindex).setValue(5);
+    //         o = o+1;
+    //       }
+    //   });
+    // });
 
+      // let test = mog.indexOf(mog[5])+2;
+      // let boole;
+      // if(vapb[2][0].toString()=== mog[0].toString()){
+      //   boole = true;
+      // }else{
+      //   boole = false;
+      // }  
+    //  sheet.getRange("F"+test).setValue();
+    return typeof(b[0][0]);
+  }
 
-function strikeOut() {
-  const textsForStrikethrough = ["TBD"];  // Please set the texts you want to reflect the strikethrough.
-  const sheetName = "Pull Schedule";  // Please set the sheet name.
+function removeZeros(jobob){
+  return jobob.replace(/^0+/, '');
+}
 
+function removeSpaces(k){
+  return k!== '';
+}
+
+function strikeOut(textsForStrikethrough, sheetName) {
+  // const textsForStrikethrough = ["TBD"];  
+  // const sheetName = "Pull Schedule";  
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
   const range = sheet.getDataRange();
   const modify = range.getValues().reduce((ar, e, r) => {
-    e.forEach((f, c) => {
       textsForStrikethrough.forEach(g => {
-        const idx = f.indexOf(g);
-        if (idx > -1) ar.push({start: idx, end: idx + g.length, row: r, col: c});
-      });
+        const idx = e.indexOf(g);
+        const nidx = e.indexOf(textsForStrikethrough[1]);
+        if (idx > -1 && nidx > -1) ar.push({start: idx, row: r});
     });
     return ar;
   }, []);
   const textStyle = SpreadsheetApp.newTextStyle().setStrikethrough(true).build();
   const richTextValues = range.getRichTextValues();
-  modify.forEach(({start, end, row, col}) => richTextValues[row][col] = richTextValues[row][col].copy().setTextStyle(start, end, textStyle).build());
+  modify.forEach(e =>{
+      richTextValues[e.row][e.start]=richTextValues[e.row][e.start].copy().setTextStyle(textStyle).build();
+  }); 
   range.setRichTextValues(richTextValues);
+  return JSON.stringify(modify);
+}
 
-function grabvals(){
-  //make it detect the name of the first sheet (so that "Summary" is replaced with whatever) and the second sheet ("Summary" but it has (number) where number should ideally be 1 because you delete the other sheet after the comparisons are obtained)
-  //remember to add the edge case handlers for when one sheet is longer or shorter than the other
-  let oldSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary");
-  let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary (1)");
+function compareContrast(newOne, oldOne){
   let puller = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pull Schedule");
-  let oldOne = oldSheet.getRange("A2:D"+getLastDataRow(oldSheet)).getValues();
-  let newOne = newSheet.getRange("A2:D"+getLastDataRow(newSheet)).getValues();
-  let data = [];
-  let nfo = [];
-  if(oldOne.length!==newOne.length){
-
-  } else{    
-    let stringOfNew = newOne.map(x => x.toString());
+  let toStrike = [];
+  let newAdds = [];
+  //finds from the old sheet missing things in the new sheet
+      let stringOfNew = newOne.map(x => x.toString());
     oldOne.forEach(army =>{
       if(stringOfNew.indexOf(army.toString())===-1){
-        data.push(army);
+        toStrike.push(army);
       }
     });
+    //finds in the new sheet things missing from the old
     let stringOfOld = oldOne.map(x => x.toString());
     newOne.forEach(lbo =>{
       if(stringOfOld.indexOf(lbo.toString())===-1){
-        nfo.push(lbo);
+        newAdds.push(lbo);
       }
     });
+
     let dumb = [];
-    data.forEach(argk =>{
-      dumb.push(argk.map(x => fjge(x.toString())));
+    toStrike.forEach(argk =>{
+      dumb.push(argk.map(x => removeZeros(x.toString())));
     }); 
     let lastRow = puller.getRange("D9:994").getA1Notation();
     let value =puller.getRange(lastRow).getValues();
@@ -496,34 +488,30 @@ function grabvals(){
         formofdata.push(itoo);
       }
     });
-    // const textStyle = SpreadsheetApp.newTextStyle().setStrikethrough(true).build();
-    // const richTextValues = range.getRichTextValues();
-    // modify.forEach(({start, end, row, col}) => richTextValues[row][col] = richTextValues[row][col].copy().setTextStyle(start, end, textStyle).build());
-    // let jilt = formofdata.map(x => x.toString());
-    // range.setRichTextValues(richTextValues);
-    // value.forEach(ebog =>{
-    //   if(jilt.indexOf(ebog.toString())!==-1){
-    //     let flalue = value.map(x => x.toString()).flat();
-    //     let flindex = flalue.indexOf(ebog.toString())+2;
-    //     puller.getRange()
-    //   }
-    // })
+
     // the part where we add the new stuff from Summary (1) to Pull Schedule
-    // let theRl = ;
-    // puller.getRange(n) nfo   
-    //puller.getRange(lastRow).setValues(formofdata);
-    // var counter = 0;
-    // data.forEach(item =>{
-    //   puller.getRange("F"+lastRow).setValue(nfo[counter][3]);
-    //   puller.getRange("D"+lastRow).setValue(nfo[counter][2]);
-    //   puller.getRange("E"+lastRow).setValue(nfo[counter][1]);
-    //   counter = counter+1;
-    //   lastRow = lastRow+1;
-    // }); ojos tristes
-  return formofdata;
-  }
-  //return bob;
+    var lastOne =  puller.getLastRow()+1;
+    var counter = 0;
+    newAdds.forEach(item =>{
+      puller.getRange("F"+lastOne).setValue(newAdds[counter][3]);
+      puller.getRange("D"+lastOne).setValue(newAdds[counter][2]);
+      puller.getRange("E"+lastOne).setValue(newAdds[counter][1]);
+      counter = counter+1;
+      lastOne = lastOne+1;
+    });
+    dumb.forEach(datablock =>{
+      strikeOut(datablock, "Pull Schedule");
+    });
+  return dumb;
 }
 
-
+function grabvals(){
+  //make it detect the name of the first sheet (so that "Summary" is replaced with whatever) and the second sheet ("Summary" but it has (number) where number should ideally be 1 because you delete the other sheet after the comparisons are obtained)
+  //remember to add the edge case handlers for when one sheet is longer or shorter than the other
+  let oldSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary");
+  let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary (1)");
+  let oldOne = oldSheet.getRange("A2:D"+getLastDataRow(oldSheet)).getValues();
+  let newOne = newSheet.getRange("A2:D"+getLastDataRow(newSheet)).getValues();
+  compareContrast(newOne, oldOne);
+  //return bob;
 }
