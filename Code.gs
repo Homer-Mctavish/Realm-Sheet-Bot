@@ -76,6 +76,61 @@ function deleteAllRows(){
   sheet.getRange("A9:I9").clear();
 }
 
+const deepGet = (obj, keys) =>
+  keys.reduce(
+    (xs, x) => (xs && xs[x] !== null && xs[x] !== undefined ? xs[x] : null),
+    obj
+  );
+
+//sheetId, sheetName, queryString
+function queryASpreadsheet(sheetId, sheetName, queryString) {
+ let url = 'https://docs.google.com/spreadsheets/d/'+sheetId+'/gviz/tq?'+
+            'sheet='+sheetName+
+            '&tq=' + encodeURIComponent(queryString);
+  let params = {
+    headers: {
+      'Authorization': 'Bearer ' + ScriptApp.getOAuthToken()
+    },
+    muteHttpExceptions: true
+  };
+  let ret  = UrlFetchApp.fetch(url, params).getContentText();
+  let k = JSON.parse(ret.replace("/*O_o*/", "").replace("google.visualization.Query.setResponse(", "").slice(0, -2));
+  let depp = deepGet(k, ['table','rows']);
+  let arr = [];
+  depp.forEach(column=>{
+    arr.push(JSON.stringify(column['c'][0].v))
+  });
+  return arr;
+}
+
+function removeZeros(jobob){
+  return jobob.replace(/^0+/, '');
+}
+
+function hasNumber(myString) {
+  return /\d/.test(myString);
+}
+
+  function superV(){//use the findrow function from item import sheet to find row to insert the string of mog[o]
+    let vapb = queryASpreadsheet("1iNOyqZuLorKOO3qOctOD6QfqJYeuvuXK9I_AkO4hh2o", "Rooms and Numbers", 'SELECT A WHERE B IS NOT NULL');
+    let napb = queryASpreadsheet("1iNOyqZuLorKOO3qOctOD6QfqJYeuvuXK9I_AkO4hh2o", "Rooms and Numbers", 'SELECT B WHERE B IS NOT NULL');
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import");
+    const shrt = sheet.getRange("E3:E").getValues().filter(String);
+    let mog = [];    
+    shrt.forEach(argk =>{
+      mog.push(argk.map(x => removeZeros(x.toString()).toString()));
+    });
+    var o = 0;
+    let flatten = mog.flat();
+    vapb.forEach(noomber =>{
+      if(flatten.indexOf(noomber)!==-1){
+        let placement = flatten.indexOf(noomber)+3;
+        sheet.getRange("F"+placement).setValue(napb[o].replaceAll("\"",''));
+        o = o+1;
+      };
+    });
+  };
+
 function processXLSsheet(){
   let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary");
   let sheet2 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import");
@@ -95,7 +150,7 @@ function processXLSsheet(){
   let rowcount = combined.length;
   sheet2.getRange(3,1,rowcount).setValues(combined);
   sheet2.getRange(3,2,rowcount).setValues(pullTypes);
-  
+  superV()
 };
 
 
@@ -214,10 +269,7 @@ function formatText() {
     let fontSizes = [
         [44, 46, 48]
     ];
-
     range1.setFontSizes(fontSizes);
- 
-
 }
 
 
@@ -278,159 +330,11 @@ function setCellColors() {
   }
   }
 
-//v6 version in case the rest of the shit breaks
-// const deepGet = function(obj, keys) {
-//   keys.reduce(
-//     function(xs, x){ (xs && xs[x] !== null && xs[x] !== undefined ? xs[x] : null)},
-//     obj
-//   );
-// };
-
-const deepGet = (obj, keys) =>
-  keys.reduce(
-    (xs, x) => (xs && xs[x] !== null && xs[x] !== undefined ? xs[x] : null),
-    obj
-  );
-
-//v6 version in case the rest of the shit breaks
-// //sheetId, sheetName, queryString
-// function queryASpreadsheet(sheetId, sheetName, queryString) {
-//  var url = 'https://docs.google.com/spreadsheets/d/'+sheetId+'/gviz/tq?'+
-//             'sheet='+sheetName+
-//             '&tq=' + encodeURIComponent(queryString);
-//   let params = {
-//     headers: {
-//       'Authorization': 'Bearer ' + ScriptApp.getOAuthToken()
-//     },
-//     muteHttpExceptions: true
-//   };
-//   var ret  = UrlFetchApp.fetch(url, params).getContentText();
-//   var k = JSON.parse(ret.replace("/*O_o*/", "").replace("google.visualization.Query.setResponse(", "").slice(0, -2));
-//   var depp = deepGet(k, ['table','rows']);
-//   var arr = [];
-//   depp.forEach(function(column){
-//     arr.push(JSON.stringify(column['c'][0].v))
-//   });
-//   return arr;
-// };
-
-//sheetId, sheetName, queryString
-function queryASpreadsheet(sheetId, sheetName, queryString) {
- let url = 'https://docs.google.com/spreadsheets/d/'+sheetId+'/gviz/tq?'+
-            'sheet='+sheetName+
-            '&tq=' + encodeURIComponent(queryString);
-  let params = {
-    headers: {
-      'Authorization': 'Bearer ' + ScriptApp.getOAuthToken()
-    },
-    muteHttpExceptions: true
-  };
-  let ret  = UrlFetchApp.fetch(url, params).getContentText();
-  let k = JSON.parse(ret.replace("/*O_o*/", "").replace("google.visualization.Query.setResponse(", "").slice(0, -2));
-  let depp = deepGet(k, ['table','rows']);
-  let arr = [];
-  depp.forEach(column=>{
-    arr.push(JSON.stringify(column['c'][0].v))
-  });
-  return arr;
-}
-
-function queryASpreadsheet2(sheetId, sheetName, queryString) {
- var url = 'https://docs.google.com/spreadsheets/d/'+sheetId+'/gviz/tq?'+
-            'sheet='+sheetName+
-            '&tqx=out:csv' +
-            '&tq=' + encodeURIComponent(queryString);
-  var params = {
-    headers: {
-      'Authorization': 'Bearer ' + ScriptApp.getOAuthToken()
-    },
-    muteHttpExceptions: true
-  };
-  let csvData   = UrlFetchApp.fetch(url, params);
-  let dataTwoD  = Utilities.parseCsv(csvData);// array of the format [[a, b, c], [d, e, f]] where [a, b, c] is a row and b is a value
-  return dataTwoD;
-}
-
-function getLastDataRow(sheet) {
-  var lastRow = sheet.getLastRow();
-  var range = sheet.getRange("A" + lastRow);
-  if (range.getValue() !== "") {
-    return lastRow;
-  } else {
-    return range.getNextDataCell(SpreadsheetApp.Direction.UP).getRow();
-  }              
-}
-
-Array.prototype.find = function(regex) {
-  const arr = this;
-  const matches = arr.filter( function(e) { return regex.test(e); } );
-  return matches.map(function(e) { return arr.indexOf(e); } );
-};
-
-  function queryImport(){
-    let vab = queryASpreadsheet2("1iNOyqZuLorKOO3qOctOD6QfqJYeuvuXK9I_AkO4hh2o", "Rooms and Numbers", 'SELECT A, B WHERE B IS NOT NULL');
-  // let data = theRange.find( /^\d+$/).map(x=>x+2);
-    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import").getRange("O3:P"+(vab.length+2)).setValues(vab);
-  };   
-
-function findRow(searchVal) {
-  let sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  let mata = sheet.getDataRange().getValues();
-  let columnCount = sheet.getDataRange().getLastColumn();
-  let data = mata.flat().map(x => x.toString());
-  let i = data.indexOf(searchVal);
-  let columnIndex = i % columnCount;
-  let rowIndex = ((i - columnIndex) / columnCount);
-
-  Logger.log({columnIndex, rowIndex }); // zero based row and column indexes of searchVal
-
-  return i >= 0 ? rowIndex + 1 : "searchVal not found";
-}
-
-  function superV(){//use the findrow function from item import sheet to find row to insert the string of mog[o]
-    let vapb = queryASpreadsheet2("1iNOyqZuLorKOO3qOctOD6QfqJYeuvuXK9I_AkO4hh2o", "Rooms and Numbers", 'SELECT A, B WHERE B IS NOT NULL');
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import");
-    const shrt = sheet.getRange("E3:E").getValues().filter(String);
-    let mog = [];    
-    shrt.forEach(argk =>{
-      //"["+argk.map(x => removeZeros(x.toString()))+"]"
-      mog.push(argk.map(x => removeZeros(x.toString())));
-    });
-    let b = [];
-    mog.forEach(arrbo =>{
-      b.push(arrbo.map(x =>x.toString()));
-    });
-    var o = 0;
-    // vapb.forEach(numero => {
-    //   b.forEach(nbo =>{
-    //       if(numero.indexOf(nbo[0])!==-1){
-    //         let bindex = b.indexOf(b[o][o])+3;
-    //         sheet.getRange("F"+bindex).setValue(5);
-    //         o = o+1;
-    //       }
-    //   });
-    // });
-
-      // let test = mog.indexOf(mog[5])+2;
-      // let boole;
-      // if(vapb[2][0].toString()=== mog[0].toString()){
-      //   boole = true;
-      // }else{
-      //   boole = false;
-      // }  
-    //  sheet.getRange("F"+test).setValue();
-    return typeof(b[0][0]);
-  }
-
-function removeZeros(jobob){
-  return jobob.replace(/^0+/, '');
-}
-
 function removeSpaces(k){
   return k!== '';
 }
 
-function strikeOut(textsForStrikethrough, sheetName) {
+function strikeIn(textsForStrikethrough, sheetName) {
   // const textsForStrikethrough = ["TBD"];  
   // const sheetName = "Pull Schedule";  
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
@@ -439,17 +343,26 @@ function strikeOut(textsForStrikethrough, sheetName) {
       textsForStrikethrough.forEach(g => {
         const idx = e.indexOf(g);
         const nidx = e.indexOf(textsForStrikethrough[1]);
-        if (idx > -1 && nidx > -1) ar.push({start: idx, row: r});
+        if(idx===nidx){
+          let meato = []
+          e.filter(function(yourArray, index) {
+          if(yourArray === g){
+            meato.push(index)
+          }
+          meato.forEach(meat =>{
+            ar.push({col:meat, row:r})
+          })
+          });
+        }else if (idx > -1 && nidx > -1){ ar.push({col: idx, row: r})};
     });
     return ar;
   }, []);
   const textStyle = SpreadsheetApp.newTextStyle().setStrikethrough(true).build();
   const richTextValues = range.getRichTextValues();
   modify.forEach(e =>{
-      richTextValues[e.row][e.start]=richTextValues[e.row][e.start].copy().setTextStyle(textStyle).build();
+      richTextValues[e.row][e.col]=richTextValues[e.row][e.col].copy().setTextStyle(textStyle).build();
   }); 
   range.setRichTextValues(richTextValues);
-  return JSON.stringify(modify);
 }
 
 function compareContrast(newOne, oldOne){
@@ -471,38 +384,40 @@ function compareContrast(newOne, oldOne){
       }
     });
 
+
     let dumb = [];
     toStrike.forEach(argk =>{
-      dumb.push(argk.map(x => removeZeros(x.toString())));
+      dumb.push(argk.map(x => removeZeros(x.toString()).toString()));
     }); 
-    let lastRow = puller.getRange("D9:994").getA1Notation();
-    let value =puller.getRange(lastRow).getValues();
+    let value =puller.getDataRange(ed).getValues();
     let baloo = [];
     value.forEach(bobert =>{
       baloo.push(bobert.filter(x => removeSpaces(x.toString())));
-    });
-    let dumstring = dumb.map(x =>x.toString());
+    }); 
     let formofdata = [];
     baloo.forEach(itoo => {
-      if(dumstring.indexOf(itoo.toString())!==-1){
+      if(dumb.indexOf(itoo.toString())!==-1){
         formofdata.push(itoo);
       }
     });
-
+    let newerAdds = [];
+    newAdds.forEach(item =>{
+      newerAdds.push(item.map(x => removeZeros(x.toString()).toString()));
+    });
+    dumb.forEach(datablock =>{
+      strikeIn(datablock, "Pull Schedule");
+    });
     // the part where we add the new stuff from Summary (1) to Pull Schedule
     var lastOne =  puller.getLastRow()+1;
     var counter = 0;
-    newAdds.forEach(item =>{
-      puller.getRange("F"+lastOne).setValue(newAdds[counter][3]);
-      puller.getRange("D"+lastOne).setValue(newAdds[counter][2]);
-      puller.getRange("E"+lastOne).setValue(newAdds[counter][1]);
+    newerAdds.forEach(item =>{
+      puller.getRange("F"+lastOne).setValue(newerAdds[counter][3]);
+      puller.getRange("D"+lastOne).setValue(newerAdds[counter][2]);
+      puller.getRange("E"+lastOne).setValue(newerAdds[counter][1]);
       counter = counter+1;
       lastOne = lastOne+1;
     });
-    dumb.forEach(datablock =>{
-      strikeOut(datablock, "Pull Schedule");
-    });
-  return dumb;
+  return ;
 }
 
 function grabvals(){
@@ -512,6 +427,22 @@ function grabvals(){
   let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary (1)");
   let oldOne = oldSheet.getRange("A2:D"+getLastDataRow(oldSheet)).getValues();
   let newOne = newSheet.getRange("A2:D"+getLastDataRow(newSheet)).getValues();
-  compareContrast(newOne, oldOne);
-  //return bob;
+  let puller = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pull Schedule");
+  // let toStrike = [];
+
+  //     let stringOfNew = newOne.map(x => x.toString());
+  //   oldOne.forEach(army =>{
+  //     if(stringOfNew.indexOf(army.toString())===-1){
+  //       toStrike.push(army);
+  //     }
+  //   });
+
+    
+  //   let dumb = [];
+  //   toStrike.forEach(argk =>{
+  //     dumb.push(argk.map(x => removeZeros(x.toString()).toString()));
+  //   }); 
+  //   retu
+
+//compareContrast(newOne, oldOne);
 }
