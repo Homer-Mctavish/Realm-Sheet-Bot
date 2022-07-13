@@ -383,13 +383,11 @@ function compareContrast(newOne, oldOne){
         newAdds.push(lbo);
       }
     });
-
-
     let dumb = [];
     toStrike.forEach(argk =>{
       dumb.push(argk.map(x => removeZeros(x.toString()).toString()));
     }); 
-    let value =puller.getDataRange(ed).getValues();
+    let value =puller.getDataRange().getValues();
     let baloo = [];
     value.forEach(bobert =>{
       baloo.push(bobert.filter(x => removeSpaces(x.toString())));
@@ -400,6 +398,8 @@ function compareContrast(newOne, oldOne){
         formofdata.push(itoo);
       }
     });
+
+
     let newerAdds = [];
     newAdds.forEach(item =>{
       newerAdds.push(item.map(x => removeZeros(x.toString()).toString()));
@@ -411,38 +411,68 @@ function compareContrast(newOne, oldOne){
     var lastOne =  puller.getLastRow()+1;
     var counter = 0;
     newerAdds.forEach(item =>{
-      puller.getRange("F"+lastOne).setValue(newerAdds[counter][3]);
-      puller.getRange("D"+lastOne).setValue(newerAdds[counter][2]);
-      puller.getRange("E"+lastOne).setValue(newerAdds[counter][1]);
+      let lvo = newerAdds[counter][2].toString();
+      puller.getRange("F"+lastOne).setValue(newerAdds[counter][3].toString());
+      puller.getRange("G"+lastOne).setValue(lvo);
+      puller.getRange("E"+lastOne).setValue(newerAdds[counter][1].toString());
       counter = counter+1;
       lastOne = lastOne+1;
     });
-  return ;
 }
+
+    // let dumb = [];
+    // toStrike.forEach(argk =>{
+    //   dumb.push(argk.map(x => removeZeros(x.toString()).toString()));
+      
+    // })
+    
+    // value.forEach(bobert =>{
+    //   let jojh = bobert.filter(x => removeSpaces(x.toString()));
+    //   jojh.forEach(itoo =>{
+    //     if(dumb.indexOf(itoo.toString))
+    //   })
+    // }); 
 
 function grabvals(){
   //make it detect the name of the first sheet (so that "Summary" is replaced with whatever) and the second sheet ("Summary" but it has (number) where number should ideally be 1 because you delete the other sheet after the comparisons are obtained)
   //remember to add the edge case handlers for when one sheet is longer or shorter than the other
   let oldSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary");
   let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary (1)");
-  let oldOne = oldSheet.getRange("A2:D"+getLastDataRow(oldSheet)).getValues();
-  let newOne = newSheet.getRange("A2:D"+getLastDataRow(newSheet)).getValues();
-  let puller = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pull Schedule");
-  // let toStrike = [];
-
-  //     let stringOfNew = newOne.map(x => x.toString());
-  //   oldOne.forEach(army =>{
-  //     if(stringOfNew.indexOf(army.toString())===-1){
-  //       toStrike.push(army);
-  //     }
-  //   });
-
-    
-  //   let dumb = [];
-  //   toStrike.forEach(argk =>{
-  //     dumb.push(argk.map(x => removeZeros(x.toString()).toString()));
-  //   }); 
-  //   retu
-
-//compareContrast(newOne, oldOne);
+  let newOne = newSheet.getRange("A2:D"+newSheet.getLastRow()).getValues();
+  let oldOne = oldSheet.getRange("A2:D"+oldSheet.getLastRow()).getValues();
+  // let idiot = compareContrast(newOne, oldOne);
+  // return idiot;
+  let booobs = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pull Schedule").getRange("F995").getValue();
+  return typeof(booobs);
 }
+
+function nextLetter(s){
+    return s.replace(/([a-zA-Z])[^a-zA-Z]*$/, function(a){
+        var c= a.charCodeAt(0);
+        switch(c){
+            case 90: return 'A';
+            case 122: return 'a';
+            default: return String.fromCharCode(++c);
+        }
+    });
+}
+
+function onEdit(event) {
+  var ss = SpreadsheetApp.getActiveSheet();
+  if (event.range.isChecked()){
+    var stonk = nextLetter(event.range.getA1Notation()[0]);
+    var ston = event.range.getA1Notation().replace(/\D/g,'');
+    var stonko = nextLetter(stonk);
+    ss.getRange(stonk+ston).setValue(new Date());
+    ss.getRange(stonko+ston).setValue(Session.getEffectiveUser().getUsername());
+  } 
+  // else if(event.range.isChecked() == false) {
+  //   var stonk = nextLetter(event.range.getA1Notation()[0]);
+  //   var ston = event.range.getA1Notation().replace(/\D/g,'');
+  //   var stonko = nextLetter(stonk);
+  //   ss.getRange(stonk+ston).setValue("");
+  //   ss.getRange(stonko+ston).setValue("");
+
+  // }  
+}
+
