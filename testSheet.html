@@ -5,26 +5,17 @@
 
     <script>
 
-      function test1(){
-        google.script.run.withSuccessHandler(function(re){
-          document.getElementById('textor').value=re;
-        }).queryImport();
-      }
-
       function test2(){
         google.script.run.withSuccessHandler(function(ar){
-          document.getElementById('mextor').value=ar;
+          // document.getElementById('mextor').value=ar;
         }).grabvals();
+        //.grabvals();
+        //superV();
       }
     </script>
   </head>
   <body>
-    <textarea type="text" id="textor"></textarea>
-    <button onclick="test1()">test the import sheet</button>
-    <br>
-    <br>
-    <br>
-    <textarea type="text" id="mextor"></textarea>
-    <button onclick="test2()">test the differences</button>
+    <!-- <textarea type="text" id="mextor"></textarea> -->
+    <button onclick="test2()">Add Changes to Pull Schedule</button>
   </body>
 </html>
