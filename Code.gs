@@ -81,6 +81,22 @@ const deepGet = (obj, keys) =>
     obj
   );
 
+function queryASpreadsheet2(sheetId, sheetName, queryString) {
+ var url = 'https://docs.google.com/spreadsheets/d/'+sheetId+'/gviz/tq?'+
+            'sheet='+sheetName+
+            '&tqx=out:csv' +
+            '&tq=' + encodeURIComponent(queryString);
+  var params = {
+    headers: {
+      'Authorization': 'Bearer ' + ScriptApp.getOAuthToken()
+    },
+    muteHttpExceptions: true
+  };
+  let csvData   = UrlFetchApp.fetch(url, params);
+  let dataTwoD  = Utilities.parseCsv(csvData);// array of the format [[a, b, c], [d, e, f]] where [a, b, c] is a row and b is a value
+  return dataTwoD;
+}
+
 //sheetId, sheetName, queryString
 function queryASpreadsheet(sheetId, sheetName, queryString) {
  let url = 'https://docs.google.com/spreadsheets/d/'+sheetId+'/gviz/tq?'+
@@ -110,24 +126,18 @@ function hasNumber(myString) {
   return /\d/.test(myString);
 }
 
-  function superV(){//use the findrow function from item import sheet to find row to insert the string of mog[o]
-    let vapb = queryASpreadsheet("1RFZ3lJyqch9wf2pEMIGagxVOp8AvInuoPtVtnppUjW0", "Room Names and numbers", 'SELECT A');
-    let napb = queryASpreadsheet("1RFZ3lJyqch9wf2pEMIGagxVOp8AvInuoPtVtnppUjW0", "Room Names and numbers", 'SELECT B WHERE B IS NOT NULL');
+  function superV(){
+    let rad = queryASpreadsheet2("1RFZ3lJyqch9wf2pEMIGagxVOp8AvInuoPtVtnppUjW0", "Room Names and numbers", 'SELECT A, B ');
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import");
     const shrt = sheet.getRange("E3:E").getValues().filter(String);
-    let mog = [];    
-    shrt.forEach(argk =>{
-      mog.push(argk.map(x => removeZeros(x.toString()).toString()));
-    });
-    // return napb;
-    var o = 0;
-    let flatten = mog.flat();
-    vapb.forEach(noomber =>{
-      if(flatten.indexOf(noomber)!==-1){
-        let placement = flatten.indexOf(noomber)+3;
-        sheet.getRange("F"+placement).setValue(napb[o].replaceAll("\"",''));
-        o = o+1;
-      };
+    let flatten = shrt.flat();
+    flatten.forEach(noomber=>{
+      for(i of rad){
+        if(Number(i[0])===Number(noomber)){
+          let placement = flatten.indexOf(noomber)+3;
+          sheet.getRange("F"+placement).setValue(i[1]);
+        }
+      }
     });
   };
 
@@ -381,6 +391,7 @@ function setCellColors() {
   function strikeIn(textsForStrikethrough, sheetName) {
   // const textsForStrikethrough = ["TBD"];  
   // const sheetName = "Pull Schedule";  
+  const date = new Date();
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
   const range = sheet.getDataRange();
   const modify = range.getValues().reduce((ar, e, r) => {
@@ -410,10 +421,17 @@ function setCellColors() {
     richTextValues[row][col]=richTextValues[row][col].copy().setTextStyle(textStyle).build();
   }
   range.setRichTextValues(richTextValues);
+  for (i in modify){
+    let row = modify[i].row+1;
+    sheet.getRange("I"+row).setValue(date.toDateString());
+  }
 }
 
 function compareContrast(newOne, oldOne){
-  let puller = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pull Schedule");
+  const date = new Date();
+  const puller = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pull Schedule");
+  const dater = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Set");
+  const balues= dater.getRange("A2:A").getValues().flat();
   let toStrike = [];
   let newAdds = [];
   //finds from the old sheet missing things in the new sheet
@@ -430,39 +448,43 @@ function compareContrast(newOne, oldOne){
         newAdds.push(lbo);
       }
     });
-    //return  puller.getDataRange().getValues()[8][3];
+
+    SpreadsheetApp.getActiveSpreadsheet().toast('Striking out deleted items...');
     for(datablock in toStrike){
       strikeIn(toStrike[datablock], "Pull Schedule");
     }
-    return "Done";
-
-    let valu = puller.getDataRange().getValues()[199][5].split("-")[0]
-    return valu;
-    // the part where we add the new stuff from Summary (1) to Pull Schedule
+    
+    SpreadsheetApp.getActiveSpreadsheet().toast('Appending added items to Pull Schedule...');
     var lastOne =  puller.getLastRow()+1;
-    var counter = 0;
-    newAdds.forEach(item =>{
-      let dater = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Set");
-      let balues= dater.getRange("A2:A").getValues().flat();
-      let index = dater.indexOf(newAdds[counter][2])+2;
+    var alphaMess = '';
+    for(counter in newAdds){
+      let index = balues.indexOf(newAdds[counter][1])+2;
       let pulltype = dater.getRange("B"+index).getValue();
-      puller.getRange("C"+lastOne).setValue(newAdds[counter][3]);
-      puller.getRange("B"+lastOne).setValue(newAdds[counter][2]);
-      puller.getRange("G"+lastOne).setValue(newAdds[counter][1]);
-      counter = counter+1;
+      let brumpo = "'"+newAdds[counter][2]+"'"; 
+      let zumpo = "'"+newAdds[counter][1]+"'";
+      let napb = queryASpreadsheet2("1RFZ3lJyqch9wf2pEMIGagxVOp8AvInuoPtVtnppUjW0", "Room Names and numbers", "SELECT B WHERE A MATCHES "+brumpo);
+      let kapb = queryASpreadsheet2("1RFZ3lJyqch9wf2pEMIGagxVOp8AvInuoPtVtnppUjW0", "Data Set", "SELECT C WHERE A MATCHES "+zumpo);
+      alphaMess = nextString(alphaMess);
+      puller.getRange("A"+lastOne).setValue(SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import").getRange("G3").getValue());
+      puller.getRange("B"+lastOne).setValue(SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import").getRange("H3").getValue());
+      puller.getRange("E"+lastOne).setValue(pulltype);
+      puller.getRange("D"+lastOne).setValue(newAdds[counter][2]);
+      puller.getRange("C"+lastOne).setValue(napb[0][0]);
+      puller.getRange("G"+lastOne).setValue(kapb[0][0]);
+      puller.getRange("F"+lastOne).setValue(newAdds[counter][1]+'-'+newAdds[counter][4]+alphaMess);
+      puller.getRange("I"+lastOne).setValue(date.toDateString());
       lastOne = lastOne+1;
-    });
+    }
+
   }
 
 function grabvals(){
   //make it detect the name of the first sheet (so that "Summary" is replaced with whatever) and the second sheet ("Summary" but it has (number) where number should ideally be 1 because you delete the other sheet after the comparisons are obtained)
   //remember to add the edge case handlers for when one sheet is longer or shorter than the other
-  let oldSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary");
-  let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary (1)");
-  let newOne = newSheet.getRange("A2:D"+newSheet.getLastRow()).getValues();
-  let oldOne = oldSheet.getRange("A2:D"+oldSheet.getLastRow()).getValues();
-  let idiot = compareContrast(newOne, oldOne);
-  return idiot;
-  // let booobs = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pull Schedule").getRange("F995").getValue();
-  // return typeof(booobs);
+  let oldSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("oldSheet");
+  let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("newSheet");
+  let newOne = newSheet.getRange("A2:E"+newSheet.getLastRow()).getValues();
+  let oldOne = oldSheet.getRange("A2:E"+oldSheet.getLastRow()).getValues();
+  compareContrast(newOne, oldOne);
+  SpreadsheetApp.getActiveSpreadsheet().toast('Finished.');
 }
