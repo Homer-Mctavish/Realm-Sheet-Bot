@@ -126,23 +126,30 @@ function hasNumber(myString) {
   return /\d/.test(myString);
 }
 
-  function superV(){
-    let rad = queryASpreadsheet2("1RFZ3lJyqch9wf2pEMIGagxVOp8AvInuoPtVtnppUjW0", "Room Names and numbers", 'SELECT A, B ');
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import");
-    const shrt = sheet.getRange("E3:E").getValues().filter(String);
-    let flatten = shrt.flat();
-    flatten.forEach(noomber=>{
-      for(i of rad){
-        if(Number(i[0])===Number(noomber)){
-          let placement = flatten.indexOf(noomber)+3;
-          sheet.getRange("F"+placement).setValue(i[1]);
-        }
-      }
-    });
-  };
+function vLooku(){
+  let darto = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import");
+  let cellu = darto.getRange("F3");
+  cellu.setFormula("=VLOOKUP(E3,'Room Names and numbers'!A1:B"+darto.getLastRow()+",2)");
+  let Avals = darto.getRange("E1:E").getValues();
+  let Alast = Avals.filter(String).length;
+  let ranje = darto.getRange("F3:F"+Alast);
+  cellu.copyTo(ranje, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
+}
 
+function conCato(){
+    let oldSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Old extract");
+    let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("New extract");
+    let cell1 = oldSheet.getRange("E2");
+    let cell2 = newSheet.getRange("E2");
+    cell1.setFormula('=CONCATENATE(C2,".",D2)');
+    cell2.setFormula('=CONCATENATE(C2,".",D2)');
+    let range1 = oldSheet.getRange("E2:E"+oldSheet.getLastRow());
+    let range2 = newSheet.getRange("E2:E"+newSheet.getLastRow());
+    cell1.copyTo(range1, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
+    cell2.copyTo(range2, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
+  }
 function processXLSsheet(){
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Summary");
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Old extract");
   var sheet2 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import");
   var sheetLastRow = sheet.getLastRow();
   var dataValues1 = sheet.getRange(2,3,sheetLastRow).getValues();
@@ -160,8 +167,7 @@ function processXLSsheet(){
   var rowcount = combined.length;
   sheet2.getRange(3,1,rowcount).setValues(combined);
   sheet2.getRange(3,2,rowcount).setValues(pullTypes);
-  superV();
-  
+  vLooku();
 }
   
 
@@ -388,13 +394,18 @@ function setCellColors() {
   }
   }
 
+  function removeSpaces(k){
+  return k!== '';
+}
+
   function strikeIn(textsForStrikethrough, sheetName) {
   // const textsForStrikethrough = ["TBD"];  
   // const sheetName = "Pull Schedule";  
   const date = new Date();
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
   const range = sheet.getDataRange();
-  const modify = range.getValues().reduce((ar, e, r) => {
+  const dataRange = sheet.getRange("A9:I"+sheet.getLastRow());
+  const modify = dataRange.getValues().filter(x => removeSpaces(x)).reduce((ar, e, r) => {
         if(Number(textsForStrikethrough[2])===Number(e[3]) && textsForStrikethrough[1].toString()===e[5].split("-")[0] && textsForStrikethrough[3].toString()===e[5].split(".")[1].replace(/\D/g,'')){
           ar.push({col:0, row: r})
           ar.push({col:1, row: r})
@@ -411,6 +422,9 @@ function setCellColors() {
           ar.push({col:4, row: r})
           ar.push({col:5, row: r})
           ar.push({col:6, row: r})}
+        // else{
+        //   SpreadsheetApp.getActiveSpreadsheet().toast(textsForStrikethrough[2]+' is not here.');
+        // }
     return ar;
   }, []);
   const textStyle = SpreadsheetApp.newTextStyle().setStrikethrough(true).build();
@@ -425,6 +439,24 @@ function setCellColors() {
     let row = modify[i].row+1;
     sheet.getRange("I"+row).setValue(date.toDateString());
   }
+}
+
+function reducer(rope, neck){
+  return rope!== neck;
+}
+
+function theGreatFilter(rod, ring){
+  rod = rod.map(x =>x.toString());
+  ring = ring.map(x => x.toString());
+  rod.filter(x => reducer(x, ))
+}
+
+function getIntersection(setA, setB) {
+  const intersection = [
+    [...setA].filter(element => setB.has(element))
+  ];
+
+  return intersection;
 }
 
 function compareContrast(newOne, oldOne){
@@ -448,12 +480,18 @@ function compareContrast(newOne, oldOne){
         newAdds.push(lbo);
       }
     });
-
+    //[...new Set(listName)]
+    //make a set of both 
+    
+    const range = sheet.getDataRange();
+    const dataRange = sheet.getRange("A9:I"+sheet.getLastRow());
     SpreadsheetApp.getActiveSpreadsheet().toast('Striking out deleted items...');
+    let bobert = theGreatFilter(toStrike, )
     for(datablock in toStrike){
       strikeIn(toStrike[datablock], "Pull Schedule");
     }
-    
+
+
     SpreadsheetApp.getActiveSpreadsheet().toast('Appending added items to Pull Schedule...');
     var lastOne =  puller.getLastRow()+1;
     var alphaMess = '';
@@ -481,8 +519,9 @@ function compareContrast(newOne, oldOne){
 function grabvals(){
   //make it detect the name of the first sheet (so that "Summary" is replaced with whatever) and the second sheet ("Summary" but it has (number) where number should ideally be 1 because you delete the other sheet after the comparisons are obtained)
   //remember to add the edge case handlers for when one sheet is longer or shorter than the other
-  let oldSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("oldSheet");
-  let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("newSheet");
+  let bob = conCato();
+  let oldSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Old extract");
+  let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("New extract");
   let newOne = newSheet.getRange("A2:E"+newSheet.getLastRow()).getValues();
   let oldOne = oldSheet.getRange("A2:E"+oldSheet.getLastRow()).getValues();
   compareContrast(newOne, oldOne);
