@@ -171,7 +171,7 @@ function processXLSsheet(){
   var combined = [];
   var pullTypes = [];
   
-  for(var i=0; i<sheetLastRow; i++){
+  for(let i=0; i<sheetLastRow; i++){
    
     combined[i] = [dataValues1[i][0]+"."+ dataValues2[i][0]];
     pullTypes[i] = [dataValues3[i][0]];
@@ -194,16 +194,23 @@ function sortRows(){
   sortrange.sort([{column: 4, ascending: true}, {column: 6, ascending: true}])
 }
 
-function fokalt(listf, lists){
-  let jg = listf.map(x => x.toString());
-  let pobox = [];
-  lists.forEach(borber =>{
-    if(jg.indexOf(borber.toString())!==-1){
-        pobox.push(borber);
+function fokault(tho, fog){
+  fog.forEach(jam =>{
+    let pog = jam[1];
+    let mog = jam[4];
+    for (j of tho){
+      let b = j
+      let zog = j.indexOf(pog);
+      let log = j.indexOf(Number(mog));
+      if(zog===log+1){
+        let bobo = tho.indexOf(j);
+        tho.splice(bobo, 1);
+      };
     };
   });
-  return pobox;
+  return tho;
 }
+
 
 function runCreatePullSchedule() {
   // lets delete anything that was in the pull list first.
@@ -214,23 +221,16 @@ function runCreatePullSchedule() {
   let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("New extract");
   let newAdds = [];
   let toStrike = [];
-  if(newSheet){
-    let newOne = newSheet.getRange("A2:E"+newSheet.getLastRow()).getValues();
-    let oldOne = oldSheet.getRange("A2:E"+oldSheet.getLastRow()).getValues();
+  let newOne = newSheet.getRange("A2:E"+newSheet.getLastRow()).getValues();
+  let oldOne = oldSheet.getRange("A2:E"+oldSheet.getLastRow()).getValues();
+      if(newSheet){
         let stringOfNew = newOne.map(x => x.toString());
       oldOne.forEach(army =>{
         if(stringOfNew.indexOf(army.toString())===-1){
           toStrike.push(army);
         }
       });
-      //finds in the new sheet things missing from the old
-      let stringOfOld = oldOne.map(x => x.toString());
-      newOne.forEach(lbo =>{
-        if(stringOfOld.indexOf(lbo.toString())===-1){
-          newAdds.push(lbo);
-        }
-      });
-  }
+      }
   
     //we need to loop through a sheet that has tag number and wire type. Then we will add to the current Pull Shedule sheet the wire number, Wire type and wire orgin/destination.
     //we will extract the room names wire labels and type from Data Import Sheet. Need to figure out easy way for data import sheet to populate names of rooms.
@@ -241,11 +241,16 @@ function runCreatePullSchedule() {
 
     //Lets get our data from Data import Sheet and Data Set sheet 
     let dataImportLastRow = dataImportSheet.getLastRow() + 1;
-    let cleanedImport = dataImportSheet.getRange("A2:" + "C" + dataImportLastRow).getValues();
-    let dataImportValues = fokalt(cleanedImport, toStrike);
 
 
-    //var dataImportRoomNames = dataImportSheet.getRange("G3:" + "H" + dataImportLastRow).getValues()
+    //nesting burger 1032
+    // var a = [1, 2, 3], b = [101, 2, 1, 10]
+    // var c = a.concat(b)
+    // var d = c.filter((item, pos) => c.indexOf(item) === pos)
+    let importToClean = dataImportSheet.getRange("A2:" + "C" + dataImportLastRow).getValues();
+    let dataImportValues =fokault(importToClean, toStrike);
+
+    
     const originName = dataImportSheet.getRange("g3").getValue();
     const originRoomNum = dataImportSheet.getRange("h3").getValue();
     let dataSetLastRow = dataSetSheet.getLastRow() + 1;
@@ -255,21 +260,65 @@ function runCreatePullSchedule() {
     let striken = [];
     let addition = [];
     const reference = dataImportValues.flat().map(x =>x.toString());
-  
+    if(newSheet){
+      //finds in the new sheet things missing from the old
+      let stringOfOld = oldOne.map(x => x.toString());
+      newOne.forEach(lbo =>{
+        if(stringOfOld.indexOf(lbo.toString())===-1){
+          newAdds.push(lbo);
+        }
+      });
+
+      for(let h = 0; h<toStrike.length;h++){
+            
+            if(toStrike.length !== 0 && h<toStrike.length){
+                var dataImportPullType1 = toStrike[h][1];
+                var dataImportTagNumber1 = toStrike[h][4]; 
+            }
+
+          var dataImportTagNumber = dataImportValues[h+1][0];
+          var dataImportPullType =  dataImportValues[h][1];
+          var destinatainName =  dataImportValues[h+1][2]; 
+          var dataImportTagNumberSplit =  dataImportTagNumber.toString();
+    
+          var destinationRoomNumber = dataImportTagNumberSplit.split(".")[0];
+          ///Logger.log(destinationRoomNumber);
+        // now lets loop through "Data Set" to match up column B in Data Import sheet (TV, SPK etc) with Column A in "Data Set" Sheet
+        for (let hh = 0; hh < (dataSetLastRow - 1); hh++) {
+            var dataSetPullType1 = dataSetValues[hh][0];
+            //If we find a match we can move forward.
+            let bopok = reference.indexOf(dataImportPullType1);
+            let jgok = reference.indexOf(dataImportTagNumber1)+1;
+            if(dataImportPullType1 === dataSetPullType1){
+              var alphaNes = '';
+              for (let hhh = 2; hhh < (dataSetLastColumn - 1); hhh++){
+                    let bobatea = dataSetValues[hh][hhh];
+                    if (dataSetValues[hh][hhh]) {
+                      //Wire #	Wire Type	Wire Origin	Wire Destination	Comments
+                      //new order should be Origin, Origin Room #, Destination, Destination Room Number, Destination Description, Cable Number, Wire Type
+                        let john = reference.indexOf(destinationRoomNumber);
+                        alphaNes = nextString(alphaNes);
+                        let destinationDesc = dataSetValues[hh][1];
+                        let wireCategory = dataSetPullType1;
+                        let wireNumber = dataImportTagNumber1 + alphaNes;
+                        let wireType = dataSetValues[hh][hhh];
+                        let wireComment =  dataSetValues[hh][13];
+                        let bobi = new Date();
+                        let vee = bobi.toDateString().replaceAll(" ", "/");
+                        let bobjgg =  dataImportValues[john+2][2] //this is how
+                        //Logger.log(wireCategory + "-" + wireNumber + " " + wireType+"strike");
+                        striken.push([originName,originRoomNum,destinatainName, destinationRoomNumber, destinationDesc, wireCategory + "-" + wireNumber, wireType, wireComment, vee]);
+                    } 
+              }  
+            }
+        }
+
+      }
+  }
 //DOCUMENT THIS BETTER THIS NOT WORKING RIGHT. TV appears out of nowhere for some reason???
   // we are going to loop through the "Data Import" sheet  
-//   let bn = newAdds.length+toStrike.length;
-// for (let b = 0; b< bn; b++){
-//           var dataImportTagNumber = dataImportValues[b][0];
-//           var dataImportPullType =  dataImportValues[i][1];
-//           var destinatainName =  dataImportValues[i][2]; 
-//           var dataImportTagNumberSplit =  dataImportTagNumber.toString();
-    
-//           var destinationRoomNumber = dataImportTagNumberSplit.split(".")[0];
-//           Logger.log(destinationRoomNumber);
-// }
 
-  for (var i = 0; i < (dataImportLastRow - 1); i++) {
+  for (var i = 0; i < (dataImportValues.length - 1); i++) {
 
 
           // if (newAdds.length !== 0 && i<newAdds.length){
@@ -281,13 +330,13 @@ function runCreatePullSchedule() {
           //   var dataImportPullType1 = toStrike[i][1];
           //   var dataImportTagNumber1 = toStrike[i][4]; 
           // }
-          var dataImportTagNumber = dataImportValues[i][0];
+          var dataImportTagNumber = dataImportValues[i+1][0];
           var dataImportPullType =  dataImportValues[i][1];
-          var destinatainName =  dataImportValues[i][2]; 
+          var destinatainName =  dataImportValues[i+1][2]; 
           var dataImportTagNumberSplit =  dataImportTagNumber.toString();
     
           var destinationRoomNumber = dataImportTagNumberSplit.split(".")[0];
-          Logger.log(destinationRoomNumber);
+          //Logger.log(destinationRoomNumber);
         // now lets loop through "Data Set" to match up column B in Data Import sheet (TV, SPK etc) with Column A in "Data Set" Sheet
         for (var ii = 0; ii < (dataSetLastRow - 1); ii++) {
 
@@ -296,37 +345,10 @@ function runCreatePullSchedule() {
                 var dataImportTagNumber2 = newAdds[i][4]; 
             }
 
-            if(toStrike.length !== 0 && i<toStrike.length){
-                var dataImportPullType1 = toStrike[i][1];
-                var dataImportTagNumber1 = toStrike[i][4]; 
-            }
-
             var dataSetPullType = dataSetValues[ii][0];
-            var dataSetPullType1 = dataSetValues[ii][0];
             var dataSetPullType2 = dataSetValues[ii][0];
-            //If we find a match we can move forward.
-            if(dataImportPullType1 === dataSetPullType1 && reference.indexOf(dataImportPullType1)===(reference.indexOf(dataImportTagNumber1)+1)){
-              var alphaNes = '';
-              for (var iii = 2; iii < (dataSetLastColumn - 1); iii++){
-                    if (dataSetValues[ii][iii]) {
-                      //Wire #	Wire Type	Wire Origin	Wire Destination	Comments
-                      //new order should be Origin, Origin Room #, Destination, Destination Room Number, Destination Description, Cable Number, Wire Type
-                        let john = reference.indexOf(destinationRoomNumber);
-                        alphaNes = nextString(alphaNes);
-                        let destinationDesc = dataSetValues[ii][1];
-                        let wireCategory = dataSetPullType1;
-                        let wireNumber = dataImportTagNumber1 + alphaNes;
-                        let wireType = dataSetValues[ii][iii];
-                        let wireComment =  dataSetValues[ii][13];
-                        let bobi = new Date();
-                        let bobjgg =  dataImportValues[john+2][2] 
-                        //Logger.log(wireCategory + "-" + wireNumber + " " + wireType+"strike");
-                        striken.push([originName,originRoomNum,bobjgg, destinationRoomNumber, destinationDesc, wireCategory + "-" + wireNumber, wireType, wireComment, bobi.toDateString()]);
-                    } 
-              }  
-            }
             
-            else if(dataImportPullType2 === dataSetPullType2 && reference.indexOf(dataImportTagNumber2.toString())===-1){
+            if(dataImportPullType2 === dataSetPullType2 && reference.indexOf(dataImportTagNumber2.toString())===-1){
                 var alphaOes = '';
               for (var iii = 2; iii < (dataSetLastColumn - 1); iii++){
                     if (dataSetValues[ii][iii]) {
@@ -343,8 +365,9 @@ function runCreatePullSchedule() {
                         let wireType = dataSetValues[ii][iii];
                         let wireComment =  dataSetValues[ii][13];
                         let bobi = new Date();
-                        Logger.log(wireCategory + "-" + wireNumber + " " + wireType+"new");
-                        addition.push([originName,originRoomNum,destinatainName, destinationRoomNumber, destinationDesc, wireCategory + "-" + wireNumber, wireType, wireComment, bobi.toDateString()]);
+                        let vee = bobi.toDateString().replaceAll(" ", "/");
+                        //Logger.log(wireCategory + "-" + wireNumber + " " + wireType+"new");
+                        addition.push([originName,originRoomNum,destinatainName, destinationRoomNumber, destinationDesc, wireCategory + "-" + wireNumber, wireType, wireComment, vee]);
                     } 
               }
             }else if (dataImportPullType === dataSetPullType) {
@@ -375,6 +398,7 @@ function runCreatePullSchedule() {
         }
     }//here it is
     if(newSheet){
+    addition = Array.from(new Set(addition.map(JSON.stringify)), JSON.parse);
     let mathemagical = pullScheduleSheet.getRange(pullScheduleSheet.getLastRow()+1, 1, addition.length, addition[0].length);
     bong= pullScheduleSheet.getLastRow()+1;
     mathemagical.setValues(addition);
@@ -421,7 +445,7 @@ function addRoomNames(){
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var app = SpreadsheetApp.getUi();
     var dataImportSheet = ss.getSheetByName("Data Import");
-    var dataImportRoomNames = dataImportSheet.getRange("G3:" + "H" + dataImportLastRow).getValues();
+    var dataImportRoomNames = dataImportSheet.getRange("G3:" + "H" + dataImportValues.length).getValues();
   
                 //////THIS IS WHERE TROUBLE STARTS we should change 50 to actual number of rooms. Should loop through this first and update cells in dataimport then just take the column
               
@@ -550,160 +574,3 @@ function setCellColors() {
   Logger.log(gi);
   }
   }
-
-  function removeSpaces(k){
-  return k!== '';
-}
-
-  function strikeIn(textsForStrikethrough, sheetName) {
-  // const textsForStrikethrough = ["TBD"];  
-  // const sheetName = "Pull Schedule";  
-  const date = new Date();
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
-  const range = sheet.getDataRange();
-  const dataRange = sheet.getRange("A9:I"+sheet.getLastRow());
-  const modify = dataRange.getValues().filter(x => removeSpaces(x)).reduce((ar, e, r) => {
-        if(Number(textsForStrikethrough[2])===Number(e[3]) && textsForStrikethrough[1].toString()===e[5].split("-")[0] && textsForStrikethrough[3].toString()===e[5].split(".")[1].replace(/\D/g,'')){
-          ar.push({col:0, row: r})
-          ar.push({col:1, row: r})
-          ar.push({col:2, row: r})
-          ar.push({col:3, row: r})
-          ar.push({col:4, row: r})
-          ar.push({col:5, row: r})
-          ar.push({col:6, row: r})}
-        else if(textsForStrikethrough[2].toString()===e[3] && textsForStrikethrough[1].toString()===e[5].split("-")[0] && textsForStrikethrough[3].toString()===e[5].split(".")[1].replace(/\D/g,'')){
-          ar.push({col:0, row: r})
-          ar.push({col:1, row: r})
-          ar.push({col:2, row: r})
-          ar.push({col:3, row: r})
-          ar.push({col:4, row: r})
-          ar.push({col:5, row: r})
-          ar.push({col:6, row: r})}
-        // else{
-        //   SpreadsheetApp.getActiveSpreadsheet().toast(textsForStrikethrough[2]+' is not here.');
-        // }
-    return ar;
-  }, []);
-  const textStyle = SpreadsheetApp.newTextStyle().setStrikethrough(true).build();
-  const richTextValues = range.getRichTextValues();
-  for(i in modify){
-    let row = modify[i].row;
-    let col = modify[i].col;
-    richTextValues[row][col]=richTextValues[row][col].copy().setTextStyle(textStyle).build();
-  }
-  range.setRichTextValues(richTextValues);
-  for (i in modify){
-    let row = modify[i].row+1;
-    sheet.getRange("I"+row).setValue(date.toDateString());
-  }
-}
-
-function reducer(rope, neck){
-  return rope!== neck;
-}
-
-function theGreatFilter(rod, ring){
-  rod = rod.map(x =>x.toString());
-  ring = ring.map(x => x.toString());
-  rod.filter(x => reducer(x, ))
-}
-
-function getIntersection(setA, setB) {
-  const intersection = [
-    [...setA].filter(element => setB.has(element))
-  ];
-
-  return intersection;
-}
-
-function reValue(twodimensionalArray, oneDimensionalValues){
-
-}
-
-function compareContrast(newOne, oldOne){
-  const date = new Date();
-  const puller = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Pull Schedule");
-  const dater = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Set");
-  const balues= dater.getRange("A2:A").getValues().flat();
-  let toStrike = [];
-  let newAdds = [];
-  //finds from the old sheet missing things in the new sheet
-      let stringOfNew = newOne.map(x => x.toString());
-    oldOne.forEach(army =>{
-      if(stringOfNew.indexOf(army.toString())===-1){
-        toStrike.push(army);
-      }
-    });
-    //finds in the new sheet things missing from the old
-    let stringOfOld = oldOne.map(x => x.toString());
-    newOne.forEach(lbo =>{
-      if(stringOfOld.indexOf(lbo.toString())===-1){
-        newAdds.push(lbo);
-      }
-    });
-    //[...new Set(listName)]
-    //make a set of both, find the two sets intersection and transform the strings back into arrays using JSON.parse(services)
-
-    const dataRange = puller.getRange("A9:I"+puller.getLastRow()).getValues();
-    let identifiers = [];
-    for(i of dataRange){
-      let bob = i[5].toString();
-      let jane = bob.split('-')[0];
-      let larry = bob.split('-')[1];
-      let nog = larry.split(/(?=[A-Z])/)[0];
-      identifiers.push([jane, nog])
-    }
-    let mydentifiers = [];
-    for(i of toStrike){
-      mydentifiers.push([i[1].toString(), i[4].toString()]);
-    }
-    const bagration = identifiers.map(x =>x.toString());
-    const damnation = mydentifiers.map(x =>x.toString());
-    const dataSet = new Set(bagration);
-    const toSet = new Set(damnation);
-    const jg = getIntersection(toSet, dataSet);
-    const seto =JSON.parse(jg);
-    return seto;
-    return getIntersection(dataSet, toSet);
-    SpreadsheetApp.getActiveSpreadsheet().toast('Striking out deleted items...');
-    let bobert = theGreatFilter(toStrike, )
-    for(datablock in toStrike){
-      strikeIn(toStrike[datablock], "Pull Schedule");
-    }
-
-
-    SpreadsheetApp.getActiveSpreadsheet().toast('Appending added items to Pull Schedule...');
-    var lastOne =  puller.getLastRow()+1;
-    var alphaMess = '';
-    for(counter in newAdds){
-      let index = balues.indexOf(newAdds[counter][1])+2;
-      let pulltype = dater.getRange("B"+index).getValue();
-      let brumpo = "'"+newAdds[counter][2]+"'"; 
-      let zumpo = "'"+newAdds[counter][1]+"'";
-      let napb = queryASpreadsheet2("1RFZ3lJyqch9wf2pEMIGagxVOp8AvInuoPtVtnppUjW0", "Room Names and numbers", "SELECT B WHERE A MATCHES "+brumpo);
-      let kapb = queryASpreadsheet2("1RFZ3lJyqch9wf2pEMIGagxVOp8AvInuoPtVtnppUjW0", "Data Set", "SELECT C WHERE A MATCHES "+zumpo);
-      alphaMess = nextString(alphaMess);
-      puller.getRange("A"+lastOne).setValue(SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import").getRange("G3").getValue());
-      puller.getRange("B"+lastOne).setValue(SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import").getRange("H3").getValue());
-      puller.getRange("E"+lastOne).setValue(pulltype);
-      puller.getRange("D"+lastOne).setValue(newAdds[counter][2]);
-      puller.getRange("C"+lastOne).setValue(napb[0][0]);
-      puller.getRange("G"+lastOne).setValue(kapb[0][0]);
-      puller.getRange("F"+lastOne).setValue(newAdds[counter][1]+'-'+newAdds[counter][4]+alphaMess);
-      puller.getRange("I"+lastOne).setValue(date.toDateString());
-      lastOne = lastOne+1;
-    }
-
-  }
-
-function grabvals(){
-  //make it detect the name of the first sheet (so that "Summary" is replaced with whatever) and the second sheet ("Summary" but it has (number) where number should ideally be 1 because you delete the other sheet after the comparisons are obtained)
-  //remember to add the edge case handlers for when one sheet is longer or shorter than the other
-  let bob = conCato();
-  let oldSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Old extract");
-  let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("New extract");
-  let newOne = newSheet.getRange("A2:E"+newSheet.getLastRow()).getValues();
-  let oldOne = oldSheet.getRange("A2:E"+oldSheet.getLastRow()).getValues();
-  return compareContrast(newOne, oldOne);
-  SpreadsheetApp.getActiveSpreadsheet().toast('Finished.');
-}
