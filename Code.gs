@@ -243,10 +243,6 @@ function runCreatePullSchedule() {
     let dataImportLastRow = dataImportSheet.getLastRow() + 1;
 
 
-    //nesting burger 1032
-    // var a = [1, 2, 3], b = [101, 2, 1, 10]
-    // var c = a.concat(b)
-    // var d = c.filter((item, pos) => c.indexOf(item) === pos)
     let importToClean = dataImportSheet.getRange("A2:" + "C" + dataImportLastRow).getValues();
     let dataImportValues =fokault(importToClean, toStrike);
 
@@ -287,8 +283,6 @@ function runCreatePullSchedule() {
         for (let hh = 0; hh < (dataSetLastRow - 1); hh++) {
             var dataSetPullType1 = dataSetValues[hh][0];
             //If we find a match we can move forward.
-            let bopok = reference.indexOf(dataImportPullType1);
-            let jgok = reference.indexOf(dataImportTagNumber1)+1;
             if(dataImportPullType1 === dataSetPullType1){
               var alphaNes = '';
               for (let hhh = 2; hhh < (dataSetLastColumn - 1); hhh++){
@@ -296,7 +290,6 @@ function runCreatePullSchedule() {
                     if (dataSetValues[hh][hhh]) {
                       //Wire #	Wire Type	Wire Origin	Wire Destination	Comments
                       //new order should be Origin, Origin Room #, Destination, Destination Room Number, Destination Description, Cable Number, Wire Type
-                        let john = reference.indexOf(destinationRoomNumber);
                         alphaNes = nextString(alphaNes);
                         let destinationDesc = dataSetValues[hh][1];
                         let wireCategory = dataSetPullType1;
@@ -305,7 +298,6 @@ function runCreatePullSchedule() {
                         let wireComment =  dataSetValues[hh][13];
                         let bobi = new Date();
                         let vee = bobi.toDateString().replaceAll(" ", "/");
-                        let bobjgg =  dataImportValues[john+2][2] //this is how
                         //Logger.log(wireCategory + "-" + wireNumber + " " + wireType+"strike");
                         striken.push([originName,originRoomNum,destinatainName, destinationRoomNumber, destinationDesc, wireCategory + "-" + wireNumber, wireType, wireComment, vee]);
                     } 
@@ -315,21 +307,9 @@ function runCreatePullSchedule() {
 
       }
   }
-//DOCUMENT THIS BETTER THIS NOT WORKING RIGHT. TV appears out of nowhere for some reason???
   // we are going to loop through the "Data Import" sheet  
 
   for (var i = 0; i < (dataImportValues.length - 1); i++) {
-
-
-          // if (newAdds.length !== 0 && i<newAdds.length){
-          //   var dataImportPullType2 = newAdds[i][1];
-          //   var dataImportTagNumber2 = newAdds[i][4];
-          // }
-
-          // if(toStrike.length !== 0 && i<toStrike.length){
-          //   var dataImportPullType1 = toStrike[i][1];
-          //   var dataImportTagNumber1 = toStrike[i][4]; 
-          // }
           var dataImportTagNumber = dataImportValues[i+1][0];
           var dataImportPullType =  dataImportValues[i][1];
           var destinatainName =  dataImportValues[i+1][2]; 
@@ -574,3 +554,4 @@ function setCellColors() {
   Logger.log(gi);
   }
   }
+
