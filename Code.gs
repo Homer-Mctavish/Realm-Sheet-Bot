@@ -3,7 +3,6 @@ function showSidebar() {
     .setTitle('Installable Trigger-O-Matic');
   SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
     .showSidebar(html);
-    authorizeItemImport();
 }
 
 function onOpen() {
@@ -30,7 +29,10 @@ function findRow(searchVal) {
 
 function updeeat(e) {
   //let rangp = findRow(e.value);
-  SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1FSyukC97LQ8MCEvbTlrZojJF-UiFdQaZM7PGr5Ky9dQ/edit#gid=1147878197").getSheetByName("Copy of Item Import").getRange("F"+findRow(e.value)).setValue("old price: "+e.oldValue);
+
+  let bou = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1FSyukC97LQ8MCEvbTlrZojJF-UiFdQaZM7PGr5Ky9dQ/edit#gid=1147878197");
+  bou.toast("i'm real")
+  bou.getSheetByName("Copy of Item Import").getRange("F"+findRow(e.value)).setValue("old price: "+e.oldValue);
 }
 
 function createSpreadsheetEditTrigger() {
