@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+  </head>
+
+  <script>
+    function sendResult(){
+      google.script.run.withSuccessHandler(function(ar){
+        let c = document.getElementById("textor").value = ar;
+      }).readFromTable();
+      }
+
+    function insert(){
+      google.script.run.calendar();
+    }
+    </script>
+  <body>
+    <textarea id="textor"></textarea>
+    <button type="button" class="btn btn-outline-primary" onclick="sendResult()">Add SQL event to sheet</button>
+    <button type="button" class="btn btn-outline-primary" onclick="insert()">Add SQL event to calendar</button>
+  </body>
+</html>
