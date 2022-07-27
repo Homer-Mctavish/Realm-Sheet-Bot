@@ -72,21 +72,7 @@ function runRealmItemAdd() {
 const activeSpreadSheet = SpreadsheetApp.getActiveSpreadsheet();
 const activeSheet = SpreadsheetApp.getActiveSheet();
 
-let protectedFormulas = activeSpreadSheet.getSheetByName("Internal").getRange("F2:U2");
-if(protectedFormulas.canEdit() === true){
-  let protection = protectedFormulas.protect();
-  protection.removeEditors(protection.getEditors());
-}
 
-function protection(rabge){
-  var protection = rabge.protect();
-  var me = Session.getEffectiveUser();
-  protection.addEditor(me);
-  protection.removeEditors(protection.getEditors());
-  if (protection.canDomainEdit()) {
-    protection.setDomainEdit(false);
-  }
-}
 
 Array.prototype.find = function(regex) {
   const arr = this;
@@ -121,77 +107,12 @@ function queryASpreadsheet(sheetId, sheetName, queryString) {
   return arr;
 }
 
-function difference(setA, setB) {
-    let _difference = new Set(setA)
-    for (let elem of setB) {
-        _difference.delete(elem)
-    }
-    return [..._difference]
-}
-
-function findRow(searchVal) {
-  let sheet = activeSpreadSheet.getSheetByName("Copy of Item Import");
-  let data = sheet.getDataRange().getValues();
-  let columnCount = sheet.getDataRange().getLastColumn();
-
-  let i = data.flat().indexOf(searchVal);
-  let columnIndex = i % columnCount;
-  let rowIndex = ((i - columnIndex) / columnCount);
-
-  Logger.log({columnIndex, rowIndex }); // zero based row and column indexes of searchVal
-
-  return i >= 0 ? rowIndex + 1 : "searchVal not found";
-}
-
-//var priorSheet = SpreadsheetApp.openById("1gZvsAIcLfsbiCG0--cDgkl5wqx4X-8L2Zpf-6FGFyWY");
-
-function copyNew(e){
-  let oldValue = e.oldValue;
-  SpreadsheetApp.getActiveSheet().toast("old value: "+oldValue, "",40);  
-}
-
-// function createTrigger() {
-//   ScriptApp.newTrigger('copyNew')
-//     .forSpreadsheet('1gZvsAIcLfsbiCG0--cDgkl5wqx4X-8L2Zpf-6FGFyWY')
-//     .onEdit()
-//     .create();
-// }
-
-// function onEdit(e) {
-//   let oldValue = e.oldValue;
-//   let newValue = e.value;
-//   SpreadsheetApp.getActiveSpreadsheet().toast("old value: "+oldValue, "",40);
-//   //activeSpreadSheet.getSheetByName("Copy of Item Import").getRange("F32").setValue("The range's old value was: " + oldValue + ", and the updated value is: " + newValue);
-// }
-
-function onTest(){
-  SpreadsheetApp.getActiveSpreadsheet().toast("old value: rg");
-}
-
-function testRange(){
-  // let currentCost = activeSpreadSheet.getSheetByName("Copy of Item Import").getRange("C2:C").getValues().flat();
-  // let currentSet = copyNew();
-  // let oldSet = new Set(currentCost);
-  // let diff = difference(currentSet, oldSet);
-  // let info = [];
-  // diff.forEach(elem =>{
-  //   let bober = "Changed Element: "+elem+" at row: "+findRow(elem);
-  //   info.push(bober);
-
-  // });
-  // return info;
-    ScriptApp.newTrigger('onTest')
-    .forSpreadsheet('1gZvsAIcLfsbiCG0--cDgkl5wqx4X-8L2Zpf-6FGFyWY')
-    .onEdit()
-    .create();
-}
-
 function returneo(){
   let ss = SpreadsheetApp.getActiveSpreadsheet().getId();
   let query = "SELECT A WHERE A IS NOT NULL ";
   let hur = queryASpreadsheet("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4", "BOM", query);
   const dur = queryASpreadsheet(ss, "BOM", query); 
-  const hurdur = hur.concat(dur)
+  const hurdur = hur.concat(dur);
   return hurdur;
 }
 
@@ -241,6 +162,50 @@ function setAllFormulas(){
     console.log('Failed with stupid error %s', + err.message);
   }
 }
+
+let porkoso = 0;
+
+function onEdit(){
+  let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Copy of Item Import");
+  let vealue = sheet.getRange("B2:B").getValues().flat();
+  let teb = sheet.getRange("F2:F").getValues().flat();
+  let boba = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Internal");
+  let chonk = boba.getRange("C3:C").getValues().flat();
+    for(i in chonk){
+      if(vealue.indexOf(chonk[i])!==-1 && teb.length>porkoso &&i<=chonk.length){
+        let koe = vealue.indexOf(chonk[i]+2);
+        SpreadsheetApp.getActiveSpreadsheet().toast("price of "+chonk[i]+" has changed: "+sheet.getRange("F"+koe).getValue()+"new price: "+sheet.getRange("C"+koe).getValue());
+      }
+    }
+  SpreadsheetApp.getActiveSpreadsheet().toast(vealue.length);
+}
+
+function idiob(){
+  let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Copy of Item Import");
+  let vealue = sheet.getRange("A2:A").getValues().flat();
+  let boba = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Internal");
+  let chonk = boba.getRange("C3:C").getValues().flat();
+  let kf = [];
+  for(i in chonk){
+    if(vealue.indexOf(chonk[i])!==-1){
+      kf.push(vealue.indexOf(chonk[i]+2));
+    }
+  }
+  return kf;
+}
+
+// function bolbina(){
+//   let sheet = activeSpreadSheet.getSheetByName("Internal")
+//   let protections = sheet.getProtections(SpreadsheetApp.ProtectionType.RANGE);
+//   let range = sheet.getRange("F2:U2");
+//     //Iterate through all sheet's protections
+//   for(let i = 0; i < protections.length; i++) {
+//       let protection = protections[i];
+//       if (protection.getRange().getA1Notation() == range.getA1Notation()) {
+//         protection.remove();
+//       }
+//     }
+//   }
 
 function getItemList() {
     var sheet = activeSpreadSheet.getSheetByName("Item Import");
@@ -292,7 +257,7 @@ function getBOMList() {
 
 function addBOMtoTemplate() {
   var ui = SpreadsheetApp.getUi();
-  var result = ui.prompt("Please input BOM Type");
+  var result = ui.prompt("Please input BOM Type Name");
   var bomName = result.getResponseText();
   //make sure BOM Type doesn't already exist
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -449,14 +414,6 @@ function sheetInsertion(item, desc, cost, msrp, name){
   }
 }
 
-function rowLastVal(range, firstRow) {
-  // range is passed as an array of values from the indicated spreadsheet cells.
-  for (var i = range.length - 1;  i >= 0;  -- i) {
-    if (range[i] != "")  return i + firstRow;
-  }
-  return range.length;
-}
-
 function itemDesc(){
   sheet=activeSpreadSheet.getSheetByName("Internal");
   if(sheet.getRange("C2:C")===""){
@@ -495,22 +452,6 @@ function newVlookup(searchSheet, sourceSheet, colVal, colMatch, colSearch, colWr
   });  
 }
 
-function queryASpreadsheet2(sheetId, sheetName, queryString) {
- var url = 'https://docs.google.com/spreadsheets/d/'+sheetId+'/gviz/tq?'+
-            'sheet='+sheetName+
-            '&tqx=out:csv' +
-            '&tq=' + encodeURIComponent(queryString);
-  var params = {
-    headers: {
-      'Authorization': 'Bearer ' + ScriptApp.getOAuthToken()
-    },
-    muteHttpExceptions: true
-  };
-  let csvData   = UrlFetchApp.fetch(url, params);
-  let dataTwoD  = Utilities.parseCsv(csvData);// array of the format [[a, b, c], [d, e, f]] where [a, b, c] is a row and b is a value
-  return dataTwoD;
-}
-
 function gpo( queryString, x){
   
   return x.map(arg =>queryString+"'"+arg+"'");
@@ -534,17 +475,6 @@ function getLastDataRow(sheet) {
   }              
 }
 
-function newVlookup2(searchSheet, sourceSheet, colVal, colMatch, colSearch, colWrite){
-  let gh = activeSpreadSheet.getSheetByName(sourceSheet).getRange(colVal+"1:"+colVal).getValues();
-  let values = gh.filter(String);
-  var i = 3;
-  values.forEach(name=>{
-    let hgp = dquerySearch(name, colMatch, colSearch, searchSheet);
-    activeSpreadSheet.getSheetByName(sourceSheet).getRange(colWrite+i).setValue(hgp);
-    i=i+1;
-  });  
-}
-
 function jod(sheetId, sheetName, d){
   return d.map(arg => 'https://docs.google.com/spreadsheets/d/'+sheetId+'/gviz/tq?'+
             'sheet='+sheetName+
@@ -552,140 +482,6 @@ function jod(sheetId, sheetName, d){
             '&tq=' + encodeURIComponent(arg));
 }
 
-function craaazy(z){
-    let params = {
-    headers: {
-      'Authorization': 'Bearer ' + ScriptApp.getOAuthToken()
-    },
-    muteHttpExceptions: true
-  };
-  let combined = [];
-    let csvData   = UrlFetchApp.fetch(z[0], params);
-    let dataTwoD  = Utilities.parseCsv(csvData);// array of the format [[a, b, c], [d, e, f]]
-    combined.push(dataTwoD);
-  return combined;
-}
-
-
-function multo(sheet, valR, setR, mul1, mul2){
-  var sheet = activeSpreadSheet.getSheetByName(sheet);
-  var data = sheet.getRange(valR).getValues();
-  var newData = [];
-  for (i in data){
-    let row = data[i];
-    let multiply = row[mul1] * row[mul2];
-    newData.push([multiply]);
-  }
-  sheet.getRange(setR).setValues(newData);
-
-}
-
-function fastMulti(sheem, vertu, setC, col){
-  let idiot = 1-activeSpreadSheet.getSheetByName("Project Calcs").getRange("C9").getValue();
-  let stupid = activeSpreadSheet.getSheetByName("Project Calcs").getRange("C5").getValue();
-  let sheen = activeSpreadSheet.getSheetByName(sheem);
-  var data = sheen.getRange(vertu).getValues();
-  var newData = [];
-  for(i in data){
-    let row = data[i];
-    let multiply = row[col]*(stupid*idiot);
-    newData.push([multiply.toFixed(2)]);
-  }
-  sheen.getRange(setC).setValues(newData);
-}
-
-function subto(sheetd, valR, setR, fiS, seS){
-  let sheete = activeSpreadSheet.getSheetByName(sheetd);
-  let data = sheete.getRange(valR).getValues();
-  let newData = [];
-  for (i in data){
-    let row = data[i];
-    let multiply = row[fiS] - row[seS];
-    newData.push([multiply]);
-  }
-  sheete.getRange(setR).setValues(newData);
-
-}
-
-function roundh(value, precision) {
-    var multiplier = Math.pow(10, precision || 0);
-    return Math.round(value * multiplier) / multiplier;
-}
-
-function roundo(sneet, vermo, setT, como){
-  let n = activeSpreadSheet.getSheetByName(sneet);
-  let m = n.getRange(vermo).getValues();
-  let newData = [];
-  for (i in m){
-    let row = m[i];
-    let round = roundh(row[como], -2);
-    newData.push([round]);
-  }
-  n.getRange(setT).setValues(newData);
-}
-
-function addendum(smort, ramora, setback, p1, p2,p3){
-  let joke = activeSpreadSheet.getSheetByName(smort);
-  let elf = joke.getRange(ramora).getValues();
-  let newData = [];
-  for (i in elf){
-    let row = elf[i];
-    let addo =row[p1]+row[p2]+row[p3];
-    newData.push([addo]);
-  }
-  joke.getRange(setback).setValues(newData);
-
-}
-
-function fixedMulto(fj, nonfixed, setC, col, fixed){
-  let sheet = activeSpreadSheet.getSheetByName(fj);
-  var data = sheet.getRange(nonfixed).getValues();
-  var newData = [];
-  for(i in data){
-    let row = data[i];
-    const fjf = activeSpreadSheet.getSheetByName("Project Calcs").getRange(fixed).getValue();
-    let multiply = row[col] * fjf;
-    newData.push([multiply]);
-  }
-  sheet.getRange(setC).setValues(newData);
-}
-
-function fixedMulto2(fj, nonfixed, setC, col, fixed){
-  let sheet = activeSpreadSheet.getSheetByName(fj);
-  var data = sheet.getRange(nonfixed).getValues();
-  var newData = [];
-  for(i in data){
-    let row = data[i];
-    const fjf = 1-activeSpreadSheet.getSheetByName("Project Calcs").getRange(fixed).getValue();
-    let multiply = row[col] * fjf;
-    newData.push([multiply]);
-  }
-  sheet.getRange(setC).setValues(newData);
-}
-
-//find a way to change the area that adds each formula be selected by an active range selected by editedcells. 
-//Additionally, change how querySearch function works to be similar to the setvalues thing used for all the calculations here to see if that speeds up newVlookup
-// async function moFo(){
-//   const [f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u] = await Promise.all(
-//     [ 
-//       newVlookup("Item Import", "Copy of Internal", "C", "C", "A", "G"), 
-//       newVlookup("Item Import", "Copy of Internal", "C", "D", "A", "I"), 
-//       fixedMulto2("Copy of Internal", "I2:I", "K2:K", 0, "C10"), 
-//       multo( "Copy of Internal","D2:G", "H2:H", 0, 3),
-//       multo( "Copy of Internal","D2:I", "J2:J", 0, 5), 
-//       subto("Copy of Internal", "H2:L", "Q2:Q", 0, 4),
-//       subto("Copy of Internal", "O2:P", "R2:R", 0, 1),
-//       fastMulti("Copy of Internal", "D2:K", "L2:L", 0, 7),
-//       fixedMulto("Copy of Internal", "L2:L", "U2:U", 0, "C8"),
-//       fixedMulto("Copy of Internal", "J2:J", "N2:N", 0, "C3"),
-//       fixedMulto("Copy of Internal", "N2:N", "O2:O", 0, "C4"),
-//       fixedMulto("Copy of Internal", "J2:J", "M2:M", 0, "C6"),
-//       fastMulti("Copy of Internal", "N2:N", "P2:P", 0),
-//       fixedMulto("Copy of Internal", "M2:M", "S2:S", 0, "C7"),
-//       addendum("Copy of Internal", "Q2:S", "T2:T", 0, 1, 2),
-//       roundo("Copy of Internal", "L2:L", "F2:F", 0) 
-//     ]);
-// }
 
 function getLastDataCol(sheet) {
   var lastCol = sheet.getLastColumn();
