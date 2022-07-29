@@ -15,7 +15,6 @@ function onOpen() {
     .addToUi();
     setImportRange("https://docs.google.com/spreadsheets/d/1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4/edit#gid=0", "1gZvsAIcLfsbiCG0--cDgkl5wqx4X-8L2Zpf-6FGFyWY","Master Sheet");
     setImportRange("https://docs.google.com/spreadsheets/d/1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4/edit#gid=0", "1gZvsAIcLfsbiCG0--cDgkl5wqx4X-8L2Zpf-6FGFyWY","Custom Sheet");
-
 }
 
 function authorizeItemImport(){
@@ -56,7 +55,7 @@ function doGet(e) {
         .evaluate() // evaluate MUST come before setting the Sandbox mode
         .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
   } 
-  return HtmlService.createTemplateFromFile('sqlconn.html').evaluate().setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  // return HtmlService.createTemplateFromFile('sqlconn.html').evaluate().setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 function runRealmItemAdd() {
@@ -163,35 +162,14 @@ function setAllFormulas(){
   }
 }
 
-let porkoso = 0;
-
-function onEdit(){
-  let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Copy of Item Import");
-  let vealue = sheet.getRange("B2:B").getValues().flat();
-  let teb = sheet.getRange("F2:F").getValues().flat();
-  let boba = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Internal");
-  let chonk = boba.getRange("C3:C").getValues().flat();
-    for(i in chonk){
-      if(vealue.indexOf(chonk[i])!==-1 && teb.length>porkoso &&i<=chonk.length){
-        let koe = vealue.indexOf(chonk[i]+2);
-        SpreadsheetApp.getActiveSpreadsheet().toast("price of "+chonk[i]+" has changed: "+sheet.getRange("F"+koe).getValue()+"new price: "+sheet.getRange("C"+koe).getValue());
-      }
-    }
-  SpreadsheetApp.getActiveSpreadsheet().toast(vealue.length);
+function setChangeSheet(){
+ SpreadsheetApp.getActiveSpreadsheet().getSheetByName("changes").getRange("A2").setFormula("=QUERY(\'Copy of Item Import\'!A2:F, \"select A,C,F where F is not null\" )");
 }
 
-function idiob(){
-  let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Copy of Item Import");
-  let vealue = sheet.getRange("A2:A").getValues().flat();
-  let boba = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Internal");
-  let chonk = boba.getRange("C3:C").getValues().flat();
-  let kf = [];
-  for(i in chonk){
-    if(vealue.indexOf(chonk[i])!==-1){
-      kf.push(vealue.indexOf(chonk[i]+2));
-    }
-  }
-  return kf;
+function jelq(){
+  let horb = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("changes");
+  let bbol = horb.getRange("A2:C"+horb.getLastRow()).getValues();
+  return bbol;
 }
 
 // function bolbina(){
@@ -254,6 +232,12 @@ function getBOMList() {
 }
 //end edit
 
+
+function retrieve(){
+  let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("changes");
+  let bob = sheet.getRange("A2:C"+sheet.getLastRow()).getValues();
+  return bob;
+}
 
 function addBOMtoTemplate() {
   var ui = SpreadsheetApp.getUi();
