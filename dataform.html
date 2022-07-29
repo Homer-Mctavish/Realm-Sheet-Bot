@@ -4,51 +4,59 @@
 <head>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
 </head>
+
+<style>
+table,
+td {
+    border: 1px solid #333;
+}
+
+thead
+  </style>
 <script>
-var semaphore = true;
 
 function addList() {
-  semaphore = false;
+
       google.script.run
         .withFailureHandler(onFailure)
         .withSuccessHandler(addListValues)
         .getItemList();
-        semaphore = true;
+      
 }
 
 function addItem(){
-  semaphore = false;
+
   var itemToAdd = document.getElementById('selectedItemToPaste').value;
   var itemQty = document.getElementById('itemQty').value;
   var itemRoom = document.getElementById('itemRoom').value;
   document.getElementById('selectedItemToPaste').focus();
   //alert(itemToPaste);
   google.script.run.addItems(itemToAdd,itemQty,itemRoom);
-  semaphore = true;
+
 }
 
 function setForm(){
-  semaphore = false;
+
   google.script.run.setAllFormulas();
-  semaphore = true;
+
 }
 
 function impl(){
-  semaphore = false;
+
   google.script.run.testingfd();
-  semaphore = true;
+
 }
 
 function removeItem(){
-  semaphore = false;
+
   google.script.run.removeItems(itemQty,itemRoom);
-  semaphore = true;
+
 
 }
 //need to put option value as the item name only!!. then figure out how to paste just that to the sheet.
 
 function addListValues(values) {
-      semaphore = false;
+    
       var list = document.getElementById('dropdownList');
       for (var i = 1; i < values.length; i++) 
         var subtext = document.createElement("data-subtext");
@@ -59,28 +67,28 @@ function addListValues(values) {
         option.value = values[i][0]; // Modified
         list.appendChild(option, subtext); // Modified
       }
-      semaphore = true;
+    
 }
 
 function submitAddBom() {
-  semaphore = false;
+
     google.script.run.withSuccessHandler(function(ar){
     var select = document.getElementById("room-types");
     var c = document.createElement("option");
     c.text =ar;
     select.options.add(c,select.options.length);
     }).addBOMtoTemplate();
-    semaphore = true;
+  
   }
 
 function onFailure(err) {
-  semaphore = false;
+
       alert('There was an error!' + err.message);
-      semaphore = true;
+    
 }
 
   function submitData() {
-    semaphore = false;
+  
     var roomNames = document.getElementById('room-name').value;
     var selectedType = document.getElementById("room-types");
     var selectedTypeText= selectedType.options[selectedType.selectedIndex].text;
@@ -89,62 +97,48 @@ function onFailure(err) {
       return;
     }
     google.script.run.insertItems(roomNames,selectedTypeText);
-    semaphore = true;
+  
   }
 
 //added by SS
   function launchR(){
-    semaphore = false;
+  
     google.script.run.runRealmItemAdd();
-    semaphore = true;
+  
   }
 
   function formit(){
-    semaphore = false;
+  
     google.script.run.addRow();
-    semaphore = true;
+  
   }
 
+let previous = 0;
 function autoUpdate(){
-  semaphore = false;
     google.script.run.withSuccessHandler(function(re){
-    document.getElementById("room-types").innerHTML = "";
-    re.forEach(kop=>{
-      let boml = document.getElementById("room-types");
-      let option = document.createElement("option");
-      option.text=kop.replace(/"/g, "");
-      boml.add(option, boml.length);
-    });
-  }).returneo();
-  semaphore = true;
-}
-
-function ayyysynchronous(){
-    if(semiphore === true){
-      google.script.run.sCREWGOOGLE();
-      setTimeout(ayyysynchronous, 5000);
+    if(re.length>previous){
+      document.getElementById("room-types").innerHTML = "";
+      re.forEach(kop=>{
+        let boml = document.getElementById("room-types");
+        let option = document.createElement("option");
+        option.text=kop.replace(/"/g, "");
+        boml.add(option, boml.length);
+      });
+      previous = re.length;
     }else{
-      setTimeout(ayyysynchronous, 5000);
+      console.log("BOLO");
     }
+    }).returneo();
 }
-//make sure to embed ayyysynchronous() in the html to make this thing constantly execute
 
-function testl(){
-  semaphore = false;
+  function lond(){
     google.script.run.withSuccessHandler(function(re){
-    document.getElementById('textor').value=re;
-    // re.forEach(kop=>{
-    //   let boml = document.getElementById("room-types");
-    //   let option = document.createElement("option");
-    //   option.text=kop.replace(/"/g, "");
-    //   boml.add(option, boml.length);
-    // });
-  }).testRange();
-  semaphore = true;
-}
+        document.getElementById('textor').value=re;
+    }).jelq();
+  }
 
   function gobo(){
-    semaphore = false;
+  
     let sheetName = document.getElementById('ssheet').value;
     let queryColumnLetterStart = document.getElementById('scell').value;
     let queryColumnLetterEnd = document.getElementById('ssearch').value;
@@ -152,26 +146,42 @@ function testl(){
     let query = document.getElementById('sgrab').value;
     google.script.run.querylanguageSearch(sheetName, queryColumnLetterStart, queryColumnLetterEnd, queryColumnLetterSearch, query);
     // google.script.run.vLookup(sauce, val, searx, nab, plaz);
-    semaphore = true;
+  
   }
 
   function bobo(){
-    semaphore = false;
+  
     let sauce = document.getElementById('ssheet').value;
     let valv = document.getElementById('scell').value;
     let searx = document.getElementById('ssearch').value;
     let plaz = document.getElementById('splace').value;
     let nab = document.getElementById('sgrab').value;
     google.script.run.vLookup(sauce, valv, searx, nab, plaz);
-    semaphore = true;
+  
   }
 
-  function sql(){
-    semaphore = false;
-    google.script.run.getConnection();
-    semaphore = true;
-  }
-  
+function boli(){
+    google.script.run.withSuccessHandler(function(lo){
+      let table = document.getElementById("tablef");
+      var tableHeaderRowCount = 2;
+      var rowCount = table.rows.length;
+      for (var i = tableHeaderRowCount; i < rowCount; i++) {
+          table.deleteRow(tableHeaderRowCount);
+      }
+      lo.forEach(array =>{
+          let row = table.insertRow(2);
+          let cell1 = row.insertCell(0);
+          let cell2 = row.insertCell(1);
+          let cell3 = row.insertCell(2);
+          cell1.innerHTML=array[0];
+          cell2.innerHTML=array[1];
+          cell3.innerHTML=array[2];
+      });
+  }).retrieve();
+}
+
+let timerId = setInterval(() => boli(), 2000);
+
 </script>
 
 <!--//edited by SS-->
@@ -212,9 +222,6 @@ function testl(){
        <div class="col-9" style="margin-top:10px">
         <button type="button" class="btn btn-outline-primary" onclick="submitAddBom()" style="margin-top:20px">Add new BOM type from selection</button>
         </div>
-      <!-- <div class="col-9" style="margin-top:10px">
-        <button type="button" class="btn btn-outline-primary" onclick="loadBOMTypes()" style="margin-top:20px">Refresh BOM List</button>
-      </div> -->
     </div>
     </div>
 </li>
@@ -236,10 +243,10 @@ function testl(){
         </div>      
           </datalist>
           <div class="col-9"style="margin-top:20px">
-          <button type="button" class="btn btn-outline-primary" onclick="addItem()">Quick Add</button>
+          <button type="button" class="btn btn-outline-primary" onclick="launchR()">Add New Item</button>
           </div>
           <div class="col-9"style="margin-top:20px">
-          <button type="button" class="btn btn-outline-primary" onclick="launchR()">Add New Item</button>
+          <button type="button" class="btn btn-outline-primary" onclick="addItem()">Quick Add</button>
           </div>
     </div>
   </div>
@@ -260,23 +267,31 @@ function testl(){
             <button type="button" class="btn btn-outline-primary" onclick="formit()">add rows with formulas</button>
           </div>
         </div>
-     <!-- <div class="row">
-          <div class="col-9">
-              <label for="lRoo"> sheet to search from:</label><input type="text" id="ssheet" name="ssheet"> </br>
-              <label for="lRoo"> queryColumnLetterStart</label><input type="text" id="scell" name="scell"> </br>
-              <label for="lRoo"> queryColumnLetterEnd</label><input type="text" id="ssearch" name="ssearch"> </br>
-              <label for="lRoo"> queryColumnLetterSearch</label><input type="text" id="splace" name="splace"> </br>
-              <label for="lRoo"> query</label><input type="text" id="sgrab" name="sgrab"> </br>
-              <button type="button" class="btn btn-outline-primary" onclick="bobo()">Vlookup</button>
-            </div>
-          </div> -->
     </div>
 </li>
- <li>
-  <textarea id="textor"></textarea>
-<!--  <button type="button" class="btn btn-outline-primary" onclick="sql()">SQL connect</button>-->
-  <button type="button" class="btn btn-outline-primary" onclick="testl()">the test</button>
-  </li>
+<li>
+  <div class="container">
+    <div class="row">
+      <div class="col-10" id="beo">
+        <table id="tablef">
+           <colgroup span="3"></colgroup>
+          <thead>
+              <tr>
+                  <th colspan="2">Price Change Tracker</th>
+              </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Name</td>
+              <td>Current Price</td>
+              <td>Old Price</td>
+              </tr>
+        </table>
+          </div>
+        </div>
+    </div>
+</li>
+
 </ul>
 </body>
 
