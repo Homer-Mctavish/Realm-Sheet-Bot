@@ -19,7 +19,7 @@ function onOpen() {
 
 function authorizeItemImport(){
 
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Item Import");
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Item Import");  
 //authroize the data import cell
   var ssId = SpreadsheetApp.getActiveSpreadsheet().getId();
       addImportrangePermission_(ssId,'1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4');
