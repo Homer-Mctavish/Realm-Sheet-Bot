@@ -8,7 +8,7 @@ function onOpen() {
         .addItem('Set Row Colors & Sort', 'setRowColors')
         .addItem('Speaker Verification','createSpeakerVerification')
         .addItem('Delete Rows','deleteAllRows')
-        .addItem('Show Pull sidebar', 'showSidebar')
+        .addItem('TEST RUN', 'showSidebar')
         .addToUi();
 }
 
@@ -18,7 +18,6 @@ function showSidebar() {
     SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
     .showSidebar(html);
 }
-
 
 function onEdit(event) {
      var sheetName = 'Speaker Verification',
@@ -136,6 +135,10 @@ function vLooku(){
   cellu.copyTo(ranje, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
 }
 
+function calendari(){
+  CalendarApp.createEvent = new Calendar.Builder(httpTransport, jsonFactory, credentials)
+}
+
 function conCato(){
     let oldSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Old extract");
     let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("New extract");
@@ -216,13 +219,15 @@ function runCreatePullSchedule() {
   // lets delete anything that was in the pull list first.
    
   deleteAllRows();
-
+  conCato();
   let oldSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Old extract");
   let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("New extract");
   let newAdds = [];
   let toStrike = [];
-  let newOne = newSheet.getRange("A2:E"+newSheet.getLastRow()).getValues();
-  let oldOne = oldSheet.getRange("A2:E"+oldSheet.getLastRow()).getValues();
+ if(oldSheet){
+  var oldOne = oldSheet.getRange("A2:E"+oldSheet.getLastRow()).getValues();
+  if(newSheet){
+    var newOne = newSheet.getRange("A2:E"+newSheet.getLastRow()).getValues();
       if(newSheet){
         let stringOfNew = newOne.map(x => x.toString());
       oldOne.forEach(army =>{
@@ -231,6 +236,8 @@ function runCreatePullSchedule() {
         }
       });
       }
+  }
+ }
   
     //we need to loop through a sheet that has tag number and wire type. Then we will add to the current Pull Shedule sheet the wire number, Wire type and wire orgin/destination.
     //we will extract the room names wire labels and type from Data Import Sheet. Need to figure out easy way for data import sheet to populate names of rooms.
@@ -314,7 +321,6 @@ function runCreatePullSchedule() {
           var dataImportPullType =  dataImportValues[i][1];
           var destinatainName =  dataImportValues[i+1][2]; 
           var dataImportTagNumberSplit =  dataImportTagNumber.toString();
-    
           var destinationRoomNumber = dataImportTagNumberSplit.split(".")[0];
           //Logger.log(destinationRoomNumber);
         // now lets loop through "Data Set" to match up column B in Data Import sheet (TV, SPK etc) with Column A in "Data Set" Sheet
@@ -327,7 +333,7 @@ function runCreatePullSchedule() {
 
             var dataSetPullType = dataSetValues[ii][0];
             var dataSetPullType2 = dataSetValues[ii][0];
-            
+            let bogle = reference.indexOf(dataImportTagNumber2.toString());
             if(dataImportPullType2 === dataSetPullType2 && reference.indexOf(dataImportTagNumber2.toString())===-1){
                 var alphaOes = '';
               for (var iii = 2; iii < (dataSetLastColumn - 1); iii++){
@@ -347,7 +353,7 @@ function runCreatePullSchedule() {
                         let bobi = new Date();
                         let vee = bobi.toDateString().replaceAll(" ", "/");
                         //Logger.log(wireCategory + "-" + wireNumber + " " + wireType+"new");
-                        addition.push([originName,originRoomNum,destinatainName, destinationRoomNumber, destinationDesc, wireCategory + "-" + wireNumber, wireType, wireComment, vee]);
+                        addition.push([originName,originRoomNum,destinatainName, destinationRoomNumber, destinationDesc, wireCategory + "-" + wireNumber, wireType, wireComment, vee]); 
                     } 
               }
             }else if (dataImportPullType === dataSetPullType) {
@@ -365,7 +371,7 @@ function runCreatePullSchedule() {
                         let wireNumber = dataImportTagNumber + alphaDes;
                         let wireType = dataSetValues[ii][iii];
                         let wireComment =  dataSetValues[ii][13]
-                        Logger.log(wireCategory + "-" + wireNumber + " " + wireType);
+                        //Logger.log(wireCategory + "-" + wireNumber + " " + wireType);
                         insertValues.push([originName,originRoomNum,destinatainName, destinationRoomNumber, destinationDesc, wireCategory + "-" + wireNumber, wireType, wireComment, ""]);
                     }  
                 }
