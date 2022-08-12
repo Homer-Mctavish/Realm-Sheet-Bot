@@ -107,10 +107,13 @@ function queryASpreadsheet(sheetId, sheetName, queryString) {
 }
 
 function returneo(){
-  let ss = SpreadsheetApp.getActiveSpreadsheet().getId();
-  let query = "SELECT A WHERE A IS NOT NULL ";
-  let hur = queryASpreadsheet("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4", "BOM", query);
-  const dur = queryASpreadsheet(ss, "BOM", query); 
+  //let ss = SpreadsheetApp.getActiveSpreadsheet().getId();
+  //let query = "SELECT A WHERE A IS NOT NULL ";
+  let ext = SpreadsheetApp.openById("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4");
+  let hur = ext.getSheetByName("BOM").getRange("A2:A"+ext.getSheetByName("BOM").getLastRow()).getValues().flat().filter(String);
+  // let hur = queryASpreadsheet("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4", "BOM", query);
+  const dur = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("BOM").getRange("A3:A"+SpreadsheetApp.getActiveSpreadsheet().getSheetByName("BOM").getLastRow()).getValues().flat().filter(String);
+  // const dur = queryASpreadsheet(ss, "BOM", query); 
   const hurdur = hur.concat(dur);
   return hurdur;
 }
@@ -153,9 +156,25 @@ function addRow(){
 function setAllFormulas(){
   let sheet = activeSpreadSheet.getSheetByName("Internal");
   try{
-    
+    sheet.getRange("E2").setFormula("=IF(C2 = \"\",\"\",VLOOKUP(C2,\'Item Import\'!$A$2:D,2,0))");
+    sheet.getRange("F2").setFormula("=ROUND(L2,-1)");
+    sheet.getRange("G2").setFormula("=IF(C2=\"\",\"\",SUMIF(VLOOKUP(Internal!C2,\'Item Import\'!$A$2:$D$6200,3,0),\"<>#N/A\"))");
+    sheet.getRange("H2").setFormula("=G2*D2");
+    sheet.getRange("I2").setFormula("=IF(C2=\"\",\"\",SUMIF(VLOOKUP(Internal!C2,\'Item Import\'!$A$2:$D$62000,4,0),\"<>#N/A\"))");
+    sheet.getRange("J2").setFormula("=I2*D2");
+    sheet.getRange("K2").setFormula("=I2*(1-\'Project Calcs\'!$C$10)");
+    sheet.getRange("L2").setFormula("=K2*D2");
+    sheet.getRange("M2").setFormula("=J2*\'Project Calcs\'!$C$6");
+    sheet.getRange("N2").setFormula("=J2*\'Project Calcs\'!$C$3");
+    sheet.getRange("O2").setFormula("=N2*'Project Calcs'!$C$4");
+    sheet.getRange("P2").setFormula("=N2*'Project Calcs'!$C$5*(1-'Project Calcs'!$C$9)");
+    sheet.getRange("Q2").setFormula("=L2-H2");
+    sheet.getRange("R2").setFormula("=P2-O2");
+    sheet.getRange("S2").setFormula("=M2*'Project Calcs'!$C$7");
+    sheet.getRange("T2").setFormula("=R2+Q2+S2");
+    sheet.getRange("U2").setFormula("=IF(Internal!B2=\"\",\"\",Internal!I2*\'Project Calcs\'!$C$8)");
     let fill = sheet.getRange("F2:U2");
-    let all = sheet.getRange("F3:U"+getLastDataRow(sheet));
+    let all = sheet.getRange("F3:U"+sheet.getLastRow());
     fill.copyTo(all, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
   }catch(err){
     console.log('Failed with stupid error %s', + err.message);
@@ -296,6 +315,8 @@ function include(File) {
 };
 
 function insertItems(selectedRoomNameInput, selectedBomType) {
+  // selectedRoomNameInput = "lol";
+  // selectedBomType = "pen island";
     const ss = SpreadsheetApp.openById("1xz9Y9EgLcui3ekKkLic-3BC3Z8RS1s4qWvz5NFu6EM4"); 
     var selectedRoomNames = [];
     selectedRoomNames = selectedRoomNameInput.split(",");
@@ -342,13 +363,20 @@ function insertItems(selectedRoomNameInput, selectedBomType) {
     var bomSheetLastRow = getFirstEmptyBOMRowWholeRow(bomSheet);
     var bomSheetLastColum = bomSheet.getLastColumn() + 1;
     var bomSheetValue = bomSheet.getRange("A2:" + "BQ" + bomSheetLastRow).getValues();
+    let g = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("BOM");
+    let f = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("BOM").getRange("A2:"+"BQ"+g.getLastRow()).getValues();
+    f.forEach(ar=>{
+      bomSheetValue.push(ar);
+    });
+
+    // bomSheetValue.concat(SpreadsheetApp.getActiveSpreadsheet().getSheetByName("BOM").getRange("A2:"+"BQ"+g.getLastRow()).getValues())
     var insertData = "";
 
     selectedRoomNames.forEach(function (selectedRoomName) {
       if ((selectedRoomName.length > 0) && (selectedRoomName !== " ")) {
 
         //loop through all the rows of the BOM sheet.
-        for (var i = 0; i < (bomSheetLastRow - 1); i++) {
+        for (var i = 0; i < (bomSheetValue.length); i++) {
           var bomType = bomSheetValue[i][0];
           if (selectedBomType == bomType) {
             // we assume that price is even and item number is odd
