@@ -8,15 +8,8 @@ function onOpen() {
         .addItem('Set Row Colors & Sort', 'setRowColors')
         .addItem('Speaker Verification','createSpeakerVerification')
         .addItem('Delete Rows','deleteAllRows')
-        .addItem('TEST RUN', 'showSidebar')
+        .addItem('Clear Pull Schedule', 'deleteAllRows')
         .addToUi();
-}
-
-function showSidebar() {
-  let html = HtmlService.createHtmlOutputFromFile('testSheet')
-    .setTitle('Pull Schedule Automata');
-    SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
-    .showSidebar(html);
 }
 
 function onEdit(event) {
@@ -139,32 +132,40 @@ function calendari(){
   CalendarApp.createEvent = new Calendar.Builder(httpTransport, jsonFactory, credentials)
 }
 
+
 function conCato(){
     let oldSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Old extract");
-    let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("New extract");
+    if(SpreadsheetApp.getActiveSpreadsheet().getSheetByName("New extract")){
+      let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("New extract");
+      let cell1 = oldSheet.getRange("E2");
+      let cell2 = newSheet.getRange("E2");
+      cell1.setFormula('=CONCATENATE(C2,".",D2)');
+      cell2.setFormula('=CONCATENATE(C2,".",D2)');
+      let range1 = oldSheet.getRange("E2:E"+oldSheet.getLastRow());
+      let range2 = newSheet.getRange("E2:E"+newSheet.getLastRow());
+      cell1.copyTo(range1, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
+      cell2.copyTo(range2, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
+    }
     let cell1 = oldSheet.getRange("E2");
-    let cell2 = newSheet.getRange("E2");
     cell1.setFormula('=CONCATENATE(C2,".",D2)');
-    cell2.setFormula('=CONCATENATE(C2,".",D2)');
     let range1 = oldSheet.getRange("E2:E"+oldSheet.getLastRow());
-    let range2 = newSheet.getRange("E2:E"+newSheet.getLastRow());
     cell1.copyTo(range1, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
-    cell2.copyTo(range2, SpreadsheetApp.CopyPasteType.PASTE_FORMULA, false);
   }
 function processXLSsheet(){
-  let oldSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Old extract");
-  let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("New extract");
-  let newOne = newSheet.getRange("A2:E"+newSheet.getLastRow()).getValues();
-  let oldOne = oldSheet.getRange("A2:E"+oldSheet.getLastRow()).getValues();
-  let toStrike = [];
-  //let newAdds = [];
-  //finds from the old sheet missing things in the new sheet
-      let stringOfNew = newOne.map(x => x.toString());
-    oldOne.forEach(army =>{
-      if(stringOfNew.indexOf(army.toString())===-1){
-        toStrike.push(army);
-      }
-    });
+  if(SpreadsheetApp.getActiveSpreadsheet().getSheetByName("New extract")){
+    var oldSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Old extract");
+    var newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("New extract");
+    var newOne = newSheet.getRange("A2:E"+newSheet.getLastRow()).getValues();
+    var oldOne = oldSheet.getRange("A2:E"+oldSheet.getLastRow()).getValues();
+    var toStrike = [];
+    // //finds from the old sheet missing things in the new sheet
+        let stringOfNew = newOne.map(x => x.toString());
+      oldOne.forEach(army =>{
+        if(stringOfNew.indexOf(army.toString())===-1){
+          toStrike.push(army);
+        }
+      });
+  }
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Old extract");
   var sheet2 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import");
   var sheetLastRow = sheet.getLastRow();
@@ -183,9 +184,12 @@ function processXLSsheet(){
   var rowcount = combined.length;
   sheet2.getRange(3,1,rowcount).setValues(combined);
   sheet2.getRange(3,2,rowcount).setValues(pullTypes);
-  let loength= toStrike.length+2;
-  sheet2.getRange("N3:R"+loength).setValues(toStrike);
   vLooku();
+  if(SpreadsheetApp.getActiveSpreadsheet().getSheetByName("New extract")){
+    let loength= toStrike.length+2;
+    sheet2.getRange("N3:R"+loength).setValues(toStrike);
+    vLooku();
+  }
 }
   
 
@@ -214,11 +218,21 @@ function fokault(tho, fog){
   return tho;
 }
 
+function tbo(){
+    const dataImportSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import");
+
+    //Lets get our data from Data import Sheet and Data Set sheet 
+    let dataImportLastRow = dataImportSheet.getLastRow() + 1;
+
+    let k = dataImportSheet.getRange("A2:" + "C" + dataImportLastRow).getA1Notation();
+    let importToClean = dataImportSheet.getRange("A2:" + "C" + dataImportLastRow).getValues();
+    let g ='g';
+}
 
 function runCreatePullSchedule() {
   // lets delete anything that was in the pull list first.
    
-  deleteAllRows();
+  //deleteAllRows();
   conCato();
   let oldSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Old extract");
   let newSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("New extract");
@@ -244,14 +258,17 @@ function runCreatePullSchedule() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     const pullScheduleSheet = ss.getSheetByName("Pull Schedule");
     const dataSetSheet = ss.getSheetByName("Data Set");
-    const dataImportSheet = ss.getSheetByName("Data Import");
+    const dataImportSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Data Import");
 
     //Lets get our data from Data import Sheet and Data Set sheet 
     let dataImportLastRow = dataImportSheet.getLastRow() + 1;
 
-
-    let importToClean = dataImportSheet.getRange("A2:" + "C" + dataImportLastRow).getValues();
-    let dataImportValues =fokault(importToClean, toStrike);
+    let k = dataImportSheet.getRange("A2:" + "C" + dataImportLastRow).getA1Notation();
+    //importToClean
+    let dataImportValues = dataImportSheet.getRange("A2:" + "C" + dataImportLastRow).getValues();
+    // let dataImportValues =fokault(importToClean, toStrike);
+    let bungie = dataImportSheet.getRange("A2:" + "C" + dataImportLastRow).getValues();
+    let foucault =fokault(bungie, toStrike);
 
     
     const originName = dataImportSheet.getRange("g3").getValue();
@@ -290,7 +307,9 @@ function runCreatePullSchedule() {
         for (let hh = 0; hh < (dataSetLastRow - 1); hh++) {
             var dataSetPullType1 = dataSetValues[hh][0];
             //If we find a match we can move forward.
-            if(dataImportPullType1 === dataSetPullType1){
+            bungie = bungie.flat();
+            let zans =bungie.indexOf(dataImportTagNumber);
+            if(dataImportPullType1 === dataSetPullType1 && bungie.indexOf(dataImportTagNumber)!==-1){
               var alphaNes = '';
               for (let hhh = 2; hhh < (dataSetLastColumn - 1); hhh++){
                     let bobatea = dataSetValues[hh][hhh];
@@ -333,7 +352,6 @@ function runCreatePullSchedule() {
 
             var dataSetPullType = dataSetValues[ii][0];
             var dataSetPullType2 = dataSetValues[ii][0];
-            let bogle = reference.indexOf(dataImportTagNumber2.toString());
             if(dataImportPullType2 === dataSetPullType2 && reference.indexOf(dataImportTagNumber2.toString())===-1){
                 var alphaOes = '';
               for (var iii = 2; iii < (dataSetLastColumn - 1); iii++){
@@ -372,7 +390,9 @@ function runCreatePullSchedule() {
                         let wireType = dataSetValues[ii][iii];
                         let wireComment =  dataSetValues[ii][13]
                         //Logger.log(wireCategory + "-" + wireNumber + " " + wireType);
-                        insertValues.push([originName,originRoomNum,destinatainName, destinationRoomNumber, destinationDesc, wireCategory + "-" + wireNumber, wireType, wireComment, ""]);
+                        let bobi = new Date();
+                        let vee = bobi.toDateString().replaceAll(" ", "/");
+                        insertValues.push([originName,originRoomNum,destinatainName, destinationRoomNumber, destinationDesc, wireCategory + "-" + wireNumber, wireType, wireComment, vee]);
                     }  
                 }
 
@@ -560,4 +580,3 @@ function setCellColors() {
   Logger.log(gi);
   }
   }
-
