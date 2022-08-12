@@ -71,14 +71,12 @@ function addListValues(values) {
 }
 
 function submitAddBom() {
-
     google.script.run.withSuccessHandler(function(ar){
     var select = document.getElementById("room-types");
     var c = document.createElement("option");
-    c.text =ar;
+    c.text = ar;
     select.options.add(c,select.options.length);
     }).addBOMtoTemplate();
-  
   }
 
 function onFailure(err) {
@@ -108,7 +106,7 @@ function onFailure(err) {
   }
 
   function formit(){
-  
+
     google.script.run.addRow();
   
   }
@@ -116,14 +114,17 @@ function onFailure(err) {
 let previous = 0;
 function autoUpdate(){
     google.script.run.withSuccessHandler(function(re){
-    if(re.length>previous){
+    if(re.length>previous||re.length<previous){
       document.getElementById("room-types").innerHTML = "";
+      let boml = document.getElementById("room-types");
       re.forEach(kop=>{
-        let boml = document.getElementById("room-types");
         let option = document.createElement("option");
-        option.text=kop.replace(/"/g, "");
+        option.text=kop;//.replace(/"/g, "");
         boml.add(option, boml.length);
       });
+      let uH = document.createElement("option");
+      uH.text = "Selected Text";
+      boml.add(uH, boml.options.length);
       previous = re.length;
     }else{
       console.log("BOLO");
@@ -160,27 +161,27 @@ function autoUpdate(){
   
   }
 
-function boli(){
-    google.script.run.withSuccessHandler(function(lo){
-      let table = document.getElementById("tablef");
-      var tableHeaderRowCount = 2;
-      var rowCount = table.rows.length;
-      for (var i = tableHeaderRowCount; i < rowCount; i++) {
-          table.deleteRow(tableHeaderRowCount);
-      }
-      lo.forEach(array =>{
-          let row = table.insertRow(2);
-          let cell1 = row.insertCell(0);
-          let cell2 = row.insertCell(1);
-          let cell3 = row.insertCell(2);
-          cell1.innerHTML=array[0];
-          cell2.innerHTML=array[1];
-          cell3.innerHTML=array[2];
-      });
-  }).retrieve();
-}
+// function boli(){
+//     google.script.run.withSuccessHandler(function(lo){
+//       let table = document.getElementById("tablef");
+//       var tableHeaderRowCount = 2;
+//       var rowCount = table.rows.length;
+//       for (var i = tableHeaderRowCount; i < rowCount; i++) {
+//           table.deleteRow(tableHeaderRowCount);
+//       }
+//       lo.forEach(array =>{
+//           let row = table.insertRow(2);
+//           let cell1 = row.insertCell(0);
+//           let cell2 = row.insertCell(1);
+//           let cell3 = row.insertCell(2);
+//           cell1.innerHTML=array[0];
+//           cell2.innerHTML=array[1];
+//           cell3.innerHTML=array[2];
+//       });
+//   }).retrieve();
+// }
 
-let timerId = setInterval(() => boli(), 2000);
+// let timerId = setInterval(() => boli(), 2000);
 
 </script>
 
@@ -242,9 +243,9 @@ let timerId = setInterval(() => boli(), 2000);
           <datalist id="dropdownList">
         </div>      
           </datalist>
-          <div class="col-9"style="margin-top:20px">
+          <!-- <div class="col-9"style="margin-top:20px">
           <button type="button" class="btn btn-outline-primary" onclick="launchR()">Add New Item</button>
-          </div>
+          </div> -->
           <div class="col-9"style="margin-top:20px">
           <button type="button" class="btn btn-outline-primary" onclick="addItem()">Quick Add</button>
           </div>
@@ -269,7 +270,7 @@ let timerId = setInterval(() => boli(), 2000);
         </div>
     </div>
 </li>
-<li>
+<!-- <li>
   <div class="container">
     <div class="row">
       <div class="col-10" id="beo">
@@ -290,7 +291,7 @@ let timerId = setInterval(() => boli(), 2000);
           </div>
         </div>
     </div>
-</li>
+</li> -->
 
 </ul>
 </body>
